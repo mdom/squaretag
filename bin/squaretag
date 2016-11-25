@@ -13,13 +13,14 @@ sub run {
         tag    => \&tag,
         clear  => \&clear,
         search => \&search,
+        list   => \&list,
     );
 
     if ( $modes{$mode} ) {
         $modes{$mode}->(@_);
     }
     else {
-        warn "Usage: sqt [tag|clear|search] ARGS\n";
+        warn "Usage: sqt [tag|clear|list|search] ARGS\n";
         exit 1;
     }
     exit 0;
@@ -103,6 +104,20 @@ sub search {
             }
         }
         print $file, "\n";
+    }
+    return;
+}
+
+sub list {
+    my (@files) = @_;
+    my %tags;
+    for my $file (@files) {
+        my ( $base, $tags, $ext ) = split_file($file);
+        my @tags = split( /,/, $tags );
+        $tags{$_}++ for @tags;
+    }
+    for my $tag ( sort keys %tags ) {
+        print "$tag $tags{$tag}\n";
     }
     return;
 }
