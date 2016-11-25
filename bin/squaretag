@@ -14,6 +14,8 @@ sub run {
         clear  => \&clear,
         search => \&search,
         list   => \&list,
+        rename => \&rename,
+        mv     => \&rename,
     );
 
     if ( $modes{$mode} ) {
@@ -119,6 +121,25 @@ sub list {
         print "$tag $tags{$tag}\n";
     }
     return;
+}
+
+sub rename {
+    my ( $old, $new, @files ) = @_;
+  FILE:
+    for my $file (@files) {
+        my ( $base, $tags, $ext ) = split_file($file);
+        my @tags = split( /,/, $tags );
+        my %tags = map { $_ => 1 } @tags;
+        if ( exists $tags{$old} ) {
+            delete $tags{$old};
+            $tags{$new} = 1;
+            @tags = sort keys %tags;
+            my $new_file = "$base\[" . join( ',', @tags ) . "\]$ext";
+            rename $file, $new_file;
+        }
+    }
+    return;
+
 }
 
 sub split_file {
