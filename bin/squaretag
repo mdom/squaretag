@@ -1,0 +1,121 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+
+run(@ARGV) if !caller;
+
+sub run {
+
+    my $mode = shift;
+
+    my %modes = (
+        tag    => \&tag,
+        clear  => \&clear,
+        search => \&search,
+    );
+
+    if ( $modes{$mode} ) {
+        $modes{$mode}->(@_);
+    }
+    else {
+        warn "Usage: sqt [tag|clear|search] ARGS\n";
+        exit 1;
+    }
+    exit 0;
+}
+
+sub tag {
+    my ( $tag_spec, @files ) = @_;
+    my ( @add, @remove );
+
+    if ( -e $tag_spec ) {
+        warn "Tagspec is also a file?\n";
+        exit 0;
+    }
+
+    for ( split( /,/, $tag_spec ) ) {
+        next if /^\s*$/;
+        if (/^-(.*)$/) {
+            push @remove, $1;
+        }
+        elsif (/^\+?(.*)$/) {
+            push @add, $1;
+        }
+    }
+
+    if ( !@add && !@remove ) {
+        exit 0;
+    }
+
+  FILE:
+    for my $file (@files) {
+        my ( $base, $tags, $ext ) = split_file($file);
+
+        my ( @old_tags, @tags );
+        @old_tags = @tags = split( /,/, $tags );
+
+        if ( !@tags and !@add ) {
+            next FILE;
+        }
+
+        push @tags, @add;
+        my %tags = map { $_ => 1 } @tags;
+        for (@remove) {
+            delete $tags{$_};
+        }
+        @tags = sort keys %tags;
+
+        my $new_file = "$base\[" . join( ',', @tags ) . "\]$ext";
+
+        next FILE if $new_file eq $file;
+
+        #print $file, " => ", $new_file,"\n";
+        #next FILE;
+        rename $file, $new_file;
+    }
+}
+
+sub clear {
+    my (@files) = @_;
+    for my $file (@files) {
+        my ( $base, $tags, $ext ) = split_file($file);
+        my $new_file = "$base$ext";
+        rename $file, $new_file;
+    }
+}
+
+sub search {
+    my ( $tag_spec, @files ) = @_;
+  FILE:
+    for my $file (@files) {
+        my ( $base, $tags, $ext ) = split_file($file);
+        my @tags = split( /,/, $tags );
+        my %tags = map { $_ => 1 } @tags;
+        for ( split( /,/, $tag_spec ) ) {
+            if (/^-(.*)$/) {
+                next FILE if defined $tags{$1};
+            }
+            elsif (/^\+?(.*)$/) {
+                next FILE if !defined $tags{$1};
+            }
+        }
+        print $file, "\n";
+    }
+}
+
+sub split_file {
+    my $file = shift;
+    my ( $base, $tags, $ext );
+    ( $base, $ext )  = $file =~ m/^(.+?)(\.[^.]*$|$)/;
+    ( $base, $tags ) = $base =~ m/^(.*?)(?:\[([^[]*)\]$|$)/;
+    if ( !$base ) {
+        $base = "[$tags]";
+        $tags = '';
+    }
+    $ext  //= '';
+    $tags //= '';
+    return ( $base, $tags, $ext );
+}
+
+1;
