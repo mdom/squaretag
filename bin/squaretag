@@ -81,8 +81,7 @@ sub tag {
 sub clear {
     my (@files) = @_;
     for my $file (@files) {
-        my ( $base, $tags, $ext ) = split_file($file);
-        my $new_file = "$base$ext";
+        my $new_file = remove_tags($file);
         rename $file, $new_file;
     }
     return;
@@ -134,6 +133,12 @@ sub split_file {
     $ext  //= '';
     $tags //= '';
     return ( $base, $tags, $ext );
+}
+
+sub remove_tags {
+    my $file = shift;
+    my ( $base, $tags, $ext ) = split_file($file);
+    return "$base$ext";
 }
 
 1;
