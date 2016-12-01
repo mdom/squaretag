@@ -3,6 +3,8 @@
 use strict;
 use warnings;
 
+( my $app = $0 ) =~ s;.*/;;;
+
 run(@ARGV) if !caller;
 
 sub run {
@@ -22,7 +24,7 @@ sub run {
         $modes{$mode}->(@_);
     }
     else {
-        warn "Usage: sqt [tag|clear|list|search] ARGS\n";
+        warn "Usage: $app [tag|clear|list|search] ARGS\n";
         exit 1;
     }
     exit 0;
