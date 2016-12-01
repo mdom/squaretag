@@ -20,7 +20,7 @@ sub run {
         mv     => \&rename,
     );
 
-    if ( $modes{$mode} ) {
+    if ( $mode && $modes{$mode} ) {
         $modes{$mode}->(@_);
     }
     else {
