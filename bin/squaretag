@@ -34,6 +34,10 @@ sub tag {
     my ( $tag_spec, @files ) = @_;
     my ( @add, @remove );
 
+    if ( not defined $tag_spec ) {
+        pod2usage( -exit => 1, msg => 'Missing tags.' );
+    }
+
     if ( -e $tag_spec ) {
         warn "Tagspec is also a file?\n";
         exit 0;
@@ -93,6 +97,9 @@ sub clear {
 
 sub search {
     my ( $tag_spec, @files ) = @_;
+    if ( not defined $tag_spec ) {
+        pod2usage( -exit => 1, msg => 'Missing search spec.' );
+    }
   FILE:
     for my $file (@files) {
         my ( $base, $tags, $ext ) = split_file($file);
@@ -127,6 +134,13 @@ sub list {
 
 sub rename {
     my ( $old, $new, @files ) = @_;
+    return if $old eq $new;
+    if ( !defined $old || !defined $new ) {
+        podusage(
+            -exit => 1,
+            -msg  => 'Missing new or old tag.'
+        );
+    }
   FILE:
     for my $file (@files) {
         my ( $base, $tags, $ext ) = split_file($file);
