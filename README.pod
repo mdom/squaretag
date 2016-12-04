@@ -1,0 +1,83 @@
+=head1 NAME
+
+squaretag - tag files by using filenames
+
+=head1 SYNOPSIS
+
+  squaretag tag TAG FILES...
+  squaretag search SEARCH FILES...
+  squaretag clear FILES...
+  squaretag rename OLD_TAG NEW_TAG FILES...
+  squaretag list FILES...
+
+=head1 DESCRIPTION
+
+Squaretag helps you to organize your files by tagging them. The tags
+are saved in the filename by adding all tags in square brackets either
+at the end of the filename or just before the last dot.
+
+=head1 EXAMPLES
+
+Suppose the current directory contains the following files:
+
+  $ ls 
+  picture01.jpg
+  picture02
+
+Now you want to add the tag I<family> to all pictures.
+
+  $ squaretag tag family *
+
+The filenames now contain the tag I<family>:
+
+  $ ls
+  picture01[family].jpg
+  pciture02[family]
+
+=head1 COMMANDS
+
+=over 4
+
+=item tag TAG FILES...
+
+Add TAG to FILES.
+
+=item search SPEC FILES...
+
+List all FILES that match the search SPEC. SPEC is a comma seperated
+list of search terms. A search term is either in the form I<tag> or
+I<-tag>, either adding or removing all files that are or are not tagged
+with I<tag>. Search terms are combined by I<AND>.
+
+=item clear FILES...
+
+Remove all tags from FILES.
+
+=item rename OLD_TAG NEW_TAG FILES...
+
+Rename OLD_TAG in NEW_TAG in all FILES.
+
+=item list FILES...
+
+List and count all tags for FILES. The tags are sorted in descending
+order of frequency.
+
+=back
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright 2016 Mario Domgoergen C<< <mario@domgoergen.com> >>
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
