@@ -55,10 +55,10 @@ sub modify {
             push @add, $1;
         }
         elsif ( $default eq '+' ) {
-            push @add, $1;
+            push @add, $_;
         }
-            push @remove, $1;
         elsif ( $default eq '~' ) {
+            push @remove, $_;
         }
     }
 
