@@ -104,6 +104,7 @@ sub clear {
     my (@files) = @_;
     for my $file (@files) {
         my $new_file = remove_tags($file);
+        next if $file eq $new_file;
         rename $file, $new_file;
     }
     return;
