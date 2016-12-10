@@ -41,7 +41,7 @@ The filenames now contain the tag I<family>:
 =item add TAG FILES...
 
 Add TAG to FILES. TAG is a comma seperated list of tags to add. If
-a tag is prefixed by I<-> this tag will be removed from the file.
+a tag is prefixed by I<~> this tag will be removed from the file.
 
 =item remove TAG FILES...
 
@@ -52,7 +52,7 @@ a tag is prefixed by I<+> this tag will be added to the file.
 
 List all FILES that match the search SPEC. SPEC is a comma seperated
 list of search terms. A search term is either in the form I<tag> or
-I<-tag>, either adding or removing all files that are or are not tagged
+I<~tag>, either adding or removing all files that are or are not tagged
 with I<tag>. Search terms are combined by I<AND>.
 
 =item clear FILES...
