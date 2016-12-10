@@ -38,9 +38,15 @@ The filenames now contain the tag I<family>:
 
 =over 4
 
-=item tag TAG FILES...
+=item add TAG FILES...
 
-Add TAG to FILES.
+Add TAG to FILES. TAG is a comma seperated list of tags to add. If
+a tag is prefixed by I<-> this tag will be removed from the file.
+
+=item remove TAG FILES...
+
+Remove TAG from FILES. TAG is a comma seperated list of tags to remove. If
+a tag is prefixed by I<+> this tag will be added to the file.
 
 =item search SPEC FILES...
 
