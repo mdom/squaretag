@@ -88,6 +88,11 @@ sub modify {
 
         next FILE if $new_file eq $file;
 
+        if ( -e $new_file ) {
+            warn "New filename $new_file already exists. Skipping.\n";
+            next FILE;
+        }
+
         #print $file, " => ", $new_file,"\n";
         #next FILE;
         rename $file, $new_file;
