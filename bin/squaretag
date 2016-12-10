@@ -18,8 +18,8 @@ sub run {
         clear  => \&clear,
         search => \&search,
         list   => \&list,
-        rename => \&rename,
-        mv     => \&rename,
+        rename => \&rename_tag,
+        mv     => \&rename_tag,
     );
 
     if ( $mode && $modes{$mode} ) {
@@ -146,7 +146,7 @@ sub list {
     return;
 }
 
-sub rename {
+sub rename_tag {
     my ( $old, $new, @files ) = @_;
     return if $old eq $new;
     if ( !defined $old || !defined $new ) {
