@@ -26,7 +26,7 @@ Suppose the current directory contains the following files:
 
 Now you want to add the tag I<family> to all pictures.
 
-  $ squaretag tag family *
+  $ squaretag add family *
 
 The filenames now contain the tag I<family>:
 
