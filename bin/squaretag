@@ -13,13 +13,14 @@ sub run {
     my $mode = shift;
 
     my %modes = (
-        add    => sub { modify( shift, '+', @_ ) },
-        remove => sub { modify( shift, '~', @_ ) },
-        clear  => \&clear,
+        add    => sub { rename_files( modify( shift, '+', @_ ) ) },
+        remove => sub { rename_files( modify( shift, '~', @_ ) ) },
+        rename => sub { rename_files( rename_tag(@_) ) },
+        mv     => sub { rename_files( rename_tag(@_) ) },
+        clear  => sub { rename_files( clear(@_) ) },
+
         search => \&search,
         list   => \&list,
-        rename => \&rename_tag,
-        mv     => \&rename_tag,
     );
 
     if ( $mode && $modes{$mode} ) {
@@ -29,6 +30,21 @@ sub run {
         pod2usage(1);
     }
     exit 0;
+}
+
+sub rename_files {
+    for my $op (@_) {
+        my ( $old, $new ) = ( $op->[0], $op->[1] );
+        next if $old eq $new;
+	next if ! -e $old;
+        if ( -e $new ) {
+            warn "Skip moving $old to $new: File already exists.\n";
+            next;
+        }
+        rename $old, $new
+          or warn "Can't move $old to $new: $!\n";
+    }
+    return;
 }
 
 sub modify {
@@ -66,6 +82,8 @@ sub modify {
         exit 0;
     }
 
+    my @ops;
+
   FILE:
     for my $file (@files) {
         my ( $base, $tags, $ext ) = split_file($file);
@@ -86,28 +104,19 @@ sub modify {
 
         my $new_file = "$base\[" . join( ',', @tags ) . "\]$ext";
 
-        next FILE if $new_file eq $file;
-
-        if ( -e $new_file ) {
-            warn "New filename $new_file already exists. Skipping.\n";
-            next FILE;
-        }
-
-        #print $file, " => ", $new_file,"\n";
-        #next FILE;
-        rename $file, $new_file;
+        push @ops, [ $file, $new_file ];
     }
-    return;
+    return @ops;
 }
 
 sub clear {
     my (@files) = @_;
+    my @ops;
     for my $file (@files) {
         my $new_file = remove_tags($file);
-        next if $file eq $new_file;
-        rename $file, $new_file;
+        push @ops, [ $file, $new_file ];
     }
-    return;
+    return @ops;
 }
 
 sub search {
@@ -156,6 +165,7 @@ sub rename_tag {
             -msg  => 'Missing new or old tag.'
         );
     }
+    my @ops;
   FILE:
     for my $file (@files) {
         my ( $base, $tags, $ext ) = split_file($file);
@@ -166,11 +176,10 @@ sub rename_tag {
             $tags{$new} = 1;
             @tags = sort keys %tags;
             my $new_file = "$base\[" . join( ',', @tags ) . "\]$ext";
-            rename $file, $new_file;
+            push @ops, [ $file, $new_file ];
         }
     }
-    return;
-
+    return @ops;
 }
 
 sub split_file {
