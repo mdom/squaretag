@@ -82,7 +82,7 @@ sub modify {
     }
 
     if ( !@add && !@remove ) {
-        exit 0;
+        return;
     }
 
     my @ops;
