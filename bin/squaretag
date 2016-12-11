@@ -105,7 +105,13 @@ sub modify {
         }
         @tags = sort keys %tags;
 
-        my $new_file = "$base\[" . join( ',', @tags ) . "\]$ext";
+        my $new_file;
+        if (@tags) {
+            $new_file = "$base\[" . join( ',', @tags ) . "\]$ext";
+        }
+        else {
+            $new_file = "$base$ext";
+        }
 
         push @ops, [ $file, $new_file ];
     }
