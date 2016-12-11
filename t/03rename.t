@@ -10,43 +10,11 @@ use Test::More;
 
 require_ok("$Bin/../bin/squaretag");
 
-sub get_tags {
-    my $file = shift;
-    my ( $base, $tags, $suffix ) = split_file($file);
-    return $tags;
-}
-
-sub touch {
-    open( my $fh, '>', $_[0] ) or die "$!\n";
-}
-
-my $tempdir = tempdir( CLEANUP => 1 );
-
-my $file = "$tempdir/file.dat";
-touch($file);
-
-modify( 'foo', '+', $file );
-($file) = glob("$tempdir/*");
-rename_tag( 'foo', 'bar', $file );
-($file) = glob("$tempdir/*");
-
-is( get_tags($file), 'bar' );
-
-rename_tag( 'bar', 'bar', $file );
-
-is( get_tags($file), 'bar' );
-
-rename_tag( 'foo', 'quux', $file );
-
-is( get_tags($file), 'bar' );
-
-modify( 'foo', '+', $file );
-($file) = glob("$tempdir/*");
-
-rename_tag( 'foo', 'quux', $file );
-($file) = glob("$tempdir/*");
-is( get_tags($file), 'bar,quux' );
-
-unlink $file;
+is_deeply(
+    [ rename_tag( 'foo', 'bar', 'file[foo].txt' ) ],
+    [ [ 'file[foo].txt' => 'file[bar].txt' ] ]
+);
+is_deeply( [ rename_tag( 'foo', 'foo',  'file[foo].txt' ) ], [] );
+is_deeply( [ rename_tag( 'bar', 'quux', 'file[foo].txt' ) ], [] );
 
 done_testing;
