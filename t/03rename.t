@@ -3,8 +3,6 @@
 use strict;
 use warnings;
 
-use File::Temp 'tempdir';
-
 use FindBin '$Bin';
 use Test::More;
 
