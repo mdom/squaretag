@@ -36,7 +36,10 @@ sub rename_files {
     for my $op (@_) {
         my ( $old, $new ) = ( $op->[0], $op->[1] );
         next if $old eq $new;
-	next if ! -e $old;
+        if ( !-e $old ) {
+            warn "Skip missing file $old.\n";
+            next;
+        }
         if ( -e $new ) {
             warn "Skip moving $old to $new: File already exists.\n";
             next;
