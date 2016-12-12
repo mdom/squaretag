@@ -19,8 +19,11 @@ sub run {
         mv     => sub { rename_files( rename_tag(@_) ) },
         clear  => sub { rename_files( clear(@_) ) },
 
-        search => \&search,
-        list   => \&list,
+        search => sub { print $_, "\n" for search_tags(@_) },
+        list => sub {
+            my %tags = list_tags(@_);
+            print "$_ $tags{$_}\n" for sort keys %tags;
+        },
     );
 
     if ( $mode && $modes{$mode} ) {
@@ -128,11 +131,12 @@ sub clear {
     return @ops;
 }
 
-sub search {
+sub search_tags {
     my ( $tag_spec, @files ) = @_;
     if ( not defined $tag_spec ) {
         pod2usage( -exit => 1, msg => 'Missing search spec.' );
     }
+    my @found;
   FILE:
     for my $file (@files) {
         my ( $base, $tags, $ext ) = split_file($file);
@@ -146,12 +150,12 @@ sub search {
                 next FILE if !defined $tags{$1};
             }
         }
-        print $file, "\n";
+        push @found, $file;
     }
-    return;
+    return @found;
 }
 
-sub list {
+sub list_tags {
     my (@files) = @_;
     my %tags;
     for my $file (@files) {
@@ -159,10 +163,7 @@ sub list {
         my @tags = split( /,/, $tags );
         $tags{$_}++ for @tags;
     }
-    for my $tag ( sort keys %tags ) {
-        print "$tag $tags{$tag}\n";
-    }
-    return;
+    return %tags;
 }
 
 sub rename_tag {
