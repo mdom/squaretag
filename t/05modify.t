@@ -9,38 +9,31 @@ use Test::More;
 require_ok("$Bin/../bin/squaretag");
 
 is_deeply(
-    [ modify( 'foo', '+', 'file.txt' ) ],
+    [ modify( 'foo', '+', 'file.txt' ) ]->[0],
     [ [ 'file.txt' => 'file[foo].txt' ] ]
 );
 
 is_deeply(
-    [ modify( '+foo', '+', 'file.txt' ) ],
+    [ modify( '+foo', '+', 'file.txt' ) ]->[0],
     [ [ 'file.txt' => 'file[foo].txt' ] ]
 );
 
 is_deeply(
-    [ modify( 'foo', '~', 'file[foo].txt' ) ],
+    [ modify( 'foo', '~', 'file[foo].txt' ) ]->[0],
     [ [ 'file[foo].txt' => 'file.txt' ] ]
 );
 
 is_deeply(
-    [ modify( '~foo', '~', 'file[foo].txt' ) ],
+    [ modify( '~foo', '~', 'file[foo].txt' ) ]->[0],
     [ [ 'file[foo].txt' => 'file.txt' ] ]
 );
 
-is_deeply(
-    [ modify( '~foo', '~', 'file.txt' ) ],
-    []
-);
+is_deeply( [ modify( '~foo', '~', 'file.txt' ) ]->[0], [] );
+
+is_deeply( [ modify( '', '~', 'file.txt' ) ]->[0], [] );
 
 is_deeply(
-    [ modify( '', '~', 'file.txt' ) ],
-    []
-);
-
-
-is_deeply(
-    [ modify( 'foo,,~bar', '+', 'file.txt' ) ],
+    [ modify( 'foo,,~bar', '+', 'file.txt' ) ]->[0],
     [ [ 'file.txt' => 'file[foo].txt' ] ]
 );
 

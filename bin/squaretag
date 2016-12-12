@@ -13,21 +13,31 @@ sub run {
     my $mode = shift;
 
     my %modes = (
-        add    => sub { rename_files( modify( shift, '+', @_ ) ) },
-        remove => sub { rename_files( modify( shift, '~', @_ ) ) },
-        rename => sub { rename_files( rename_tag(@_) ) },
-        mv     => sub { rename_files( rename_tag(@_) ) },
-        clear  => sub { rename_files( clear(@_) ) },
-
-        search => sub { print $_, "\n" for search_tags(@_) },
-        list => sub {
-            my %tags = list_tags(@_);
-            print "$_ $tags{$_}\n" for sort keys %tags;
+        add    => { pipe => [ \&add_tags,    \&rename_files ], minargs => 2 },
+        remove => { pipe => [ \&remove_tags, \&rename_files ], minargs => 2 },
+        rename => { pipe => [ \&rename_tag,  \&rename_files ], minargs => 3 },
+        mv     => { pipe => [ \&rename_tag,  \&rename_files ], minargs => 3 },
+        clear  => { pipe => [ \&clear,       \&rename_files ], minargs => 1 },
+        search => {
+            pipe => [ \&search_tags, sub { print $_, "\n" for @_ } ],
+            minargs => 2
         },
+        list => { pipe => [ \&list_tags, \&print_tag_list ], minargs => 1 },
     );
 
     if ( $mode && $modes{$mode} ) {
-        $modes{$mode}->(@_);
+        my $pipe = $modes{$mode}->{pipe};
+        my $minargs = $modes{$mode}->{minargs};
+
+        if ( defined $minargs && @_ < $minargs ) {
+            pod2usage(1);
+        }
+
+        my ( $result, $error ) = $pipe->[0]->(@_);
+        if ($error) {
+            pod2usage( -msg => $error, -exit => 1 );
+        }
+        $pipe->[1]->($result);
     }
     else {
         pod2usage(1);
@@ -35,20 +45,28 @@ sub run {
     exit 0;
 }
 
+sub add_tags    { modify( shift, '+', @_ ) }
+sub remove_tags { modify( shift, '~', @_ ) }
+
+sub print_tag_list {
+    my $tags = shift;
+    print $_, " ", $tags->{$_}, " \n " for sort keys %$tags;
+}
+
 sub rename_files {
     for my $op (@_) {
         my ( $old, $new ) = ( $op->[0], $op->[1] );
         next if $old eq $new;
         if ( !-e $old ) {
-            warn "Skip missing file $old.\n";
+            warn " Skip missing file $old. \n ";
             next;
         }
         if ( -e $new ) {
-            warn "Skip moving $old to $new: File already exists.\n";
+            warn " Skip moving $old to $new: File already exists . \n ";
             next;
         }
         rename $old, $new
-          or warn "Can't move $old to $new: $!\n";
+          or warn " Can't move $old to $new: $! \n ";
     }
     return;
 }
@@ -59,13 +77,8 @@ sub modify {
 
     $default ||= '+';
 
-    if ( not defined $tag_spec ) {
-        pod2usage( -exit => 1, msg => 'Missing tags.' );
-    }
-
     if ( -e $tag_spec ) {
-        warn "Tagspec is also a file?\n";
-        exit 0;
+        return ( [], 'Tagspec is also a file?' );
     }
 
     for ( split( /,/, $tag_spec ) ) {
@@ -85,7 +98,7 @@ sub modify {
     }
 
     if ( !@add && !@remove ) {
-        return;
+        return [];
     }
 
     my @ops;
@@ -118,24 +131,22 @@ sub modify {
 
         push @ops, [ $file, $new_file ];
     }
-    return @ops;
+    return \@ops;
 }
 
 sub clear {
     my (@files) = @_;
     my @ops;
     for my $file (@files) {
-        my $new_file = remove_tags($file);
+        my ( $base, $tags, $ext ) = split_file($file);
+        my $new_file = "$base$ext";
         push @ops, [ $file, $new_file ];
     }
-    return @ops;
+    return \@ops;
 }
 
 sub search_tags {
     my ( $tag_spec, @files ) = @_;
-    if ( not defined $tag_spec ) {
-        pod2usage( -exit => 1, msg => 'Missing search spec.' );
-    }
     my @found;
   FILE:
     for my $file (@files) {
@@ -152,7 +163,7 @@ sub search_tags {
         }
         push @found, $file;
     }
-    return @found;
+    return \@found;
 }
 
 sub list_tags {
@@ -163,18 +174,12 @@ sub list_tags {
         my @tags = split( /,/, $tags );
         $tags{$_}++ for @tags;
     }
-    return %tags;
+    return \%tags;
 }
 
 sub rename_tag {
     my ( $old, $new, @files ) = @_;
-    return if $old eq $new;
-    if ( !defined $old || !defined $new ) {
-        podusage(
-            -exit => 1,
-            -msg  => 'Missing new or old tag.'
-        );
-    }
+    return [] if $old eq $new;
     my @ops;
   FILE:
     for my $file (@files) {
@@ -189,7 +194,7 @@ sub rename_tag {
             push @ops, [ $file, $new_file ];
         }
     }
-    return @ops;
+    return \@ops;
 }
 
 sub split_file {
@@ -205,12 +210,6 @@ sub split_file {
     return ( $base, $tags, $ext );
 }
 
-sub remove_tags {
-    my $file = shift;
-    my ( $base, $tags, $ext ) = split_file($file);
-    return "$base$ext";
-}
-
 1;
 
 __END__
@@ -221,7 +220,8 @@ squaretag - tag files by using filenames
 
 =head1 SYNOPSIS
 
-  squaretag tag TAG FILES...
+  squaretag add TAG FILES...
+  squaretag remove TAG FILES...
   squaretag search SEARCH FILES...
   squaretag clear FILES...
   squaretag rename OLD_TAG NEW_TAG FILES...
