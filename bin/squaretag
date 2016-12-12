@@ -201,7 +201,6 @@ sub split_file {
         $base = "[$tags]";
         $tags = '';
     }
-    $ext  //= '';
     $tags //= '';
     return ( $base, $tags, $ext );
 }
