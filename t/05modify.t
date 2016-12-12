@@ -38,4 +38,10 @@ is_deeply(
     []
 );
 
+
+is_deeply(
+    [ modify( 'foo,,~bar', '+', 'file.txt' ) ],
+    [ [ 'file.txt' => 'file[foo].txt' ] ]
+);
+
 done_testing;
