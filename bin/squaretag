@@ -26,7 +26,7 @@ sub run {
     );
 
     if ( $mode && $modes{$mode} ) {
-        my $pipe = $modes{$mode}->{pipe};
+        my $pipe    = $modes{$mode}->{pipe};
         my $minargs = $modes{$mode}->{minargs};
 
         if ( defined $minargs && @_ < $minargs ) {
@@ -50,7 +50,7 @@ sub remove_tags { modify( shift, '~', @_ ) }
 
 sub print_tag_list {
     my $tags = shift;
-    print $_, " ", $tags->{$_}, " \n " for sort keys %$tags;
+    print $_, " ", $tags->{$_}, "\n" for sort keys %$tags;
 }
 
 sub rename_files {
@@ -59,15 +59,15 @@ sub rename_files {
         my ( $old, $new ) = @$op;
         next if $old eq $new;
         if ( !-e $old ) {
-            warn " Skip missing file $old. \n ";
+            warn "Skip missing file $old.\n";
             next;
         }
         if ( -e $new ) {
-            warn " Skip moving $old to $new: File already exists . \n ";
+            warn "Skip moving $old to $new: File already exists.\n";
             next;
         }
         rename $old, $new
-          or warn " Can't move $old to $new: $! \n ";
+          or warn "Can't move $old to $new: $!\n";
     }
     return;
 }
