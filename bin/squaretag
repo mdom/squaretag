@@ -54,8 +54,9 @@ sub print_tag_list {
 }
 
 sub rename_files {
-    for my $op (@_) {
-        my ( $old, $new ) = ( $op->[0], $op->[1] );
+    my $ops = shift;
+    for my $op (@$ops) {
+        my ( $old, $new ) = @$op;
         next if $old eq $new;
         if ( !-e $old ) {
             warn " Skip missing file $old. \n ";
