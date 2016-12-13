@@ -102,6 +102,10 @@ limit, the filename will be hard to read.
 But at least it works for all kinds of files, it not dependent on your file or
 operating sytemen is does not need external tools or syncing steps.
 
+=head1 SEE ALSO
+
+L<tmsu|http://tmsu.org/>, L<tagspaces|https://www.tagspaces.org/>
+
 =head1 COPYRIGHT AND LICENSE
 
 Copyright 2016 Mario Domgoergen C<< <mario@domgoergen.com> >>
