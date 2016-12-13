@@ -22,27 +22,27 @@ sub run {
         add => {
             pipe     => [ \&add_tags, \&rename_files ],
             minargs  => 2,
-            opt_spec => \@rename_opts;
+            opt_spec => \@rename_opts,
         },
         remove => {
             pipe     => [ \&remove_tags, \&rename_files ],
             minargs  => 2,
-            opt_spec => \@rename_opts;
+            opt_spec => \@rename_opts,
         },
         rename => {
             pipe     => [ \&rename_tag, \&rename_files ],
             minargs  => 3,
-            opt_spec => \@rename_opts;
+            opt_spec => \@rename_opts,
         },
         mv => {
             pipe     => [ \&rename_tag, \&rename_files ],
             minargs  => 3,
-            opt_spec => \@rename_opts;
+            opt_spec => \@rename_opts,
         },
         clear => {
             pipe     => [ \&clear, \&rename_files ],
             minargs  => 1,
-            opt_spec => \@rename_opts;
+            opt_spec => \@rename_opts,
         },
         search => {
             pipe => [ \&search_tags, sub { shift; print $_, "\n" for @_ } ],
