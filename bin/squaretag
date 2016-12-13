@@ -324,6 +324,37 @@ order of frequency.
 
 =back
 
+=head1 RATIONALE
+
+Tagging files in a way that tags are preserved cross-platform or even
+cross-filesystem seems to be a hard problem with no clear cut solution.
+
+=head2 Fileformat
+
+Some file formats as mp3 or pdf support saving tags inside the files but there
+a a lot (probably most) that don't. And even the former need special programs
+to do that.
+
+=head2 Filesystem
+
+Many modern file systems support tags and special meta data streams, but the
+tags are most likely lost when you copy files from one file system to the next.
+
+=head2 External database
+
+Keeping the tags in a external database requires a sync step after moving or
+deleting files. This is harder than it sounds, you probably need the keep
+checksums to reckognize known files after a rename.
+
+=head2 Filename
+
+All filesystems limit the length of the filename, so the number of tags
+you can save per file is also limited. And even before you reach the
+limit, the filename will be hard to read.
+
+But at least it works for all kinds of files, it not dependent on your file or
+operating sytemen is does not need external tools or syncing steps.
+
 =head1 COPYRIGHT AND LICENSE
 
 Copyright 2016 Mario Domgoergen C<< <mario@domgoergen.com> >>
