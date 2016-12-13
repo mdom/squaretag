@@ -3,6 +3,8 @@
 use strict;
 use warnings;
 use Pod::Usage qw(pod2usage);
+use Getopt::Long
+  qw(GetOptionsFromArray :config bundling no_ignore_case no_getopt_compat require_order);
 
 ( my $app = $0 ) =~ s;.*/;;;
 
@@ -10,16 +12,40 @@ run(@ARGV) if !caller;
 
 sub run {
 
+    my %options;
+
     my $mode = shift;
 
+    my @rename_opts = [ 'verbose|v!', 'dry-run|n!' ];
+
     my %modes = (
-        add    => { pipe => [ \&add_tags,    \&rename_files ], minargs => 2 },
-        remove => { pipe => [ \&remove_tags, \&rename_files ], minargs => 2 },
-        rename => { pipe => [ \&rename_tag,  \&rename_files ], minargs => 3 },
-        mv     => { pipe => [ \&rename_tag,  \&rename_files ], minargs => 3 },
-        clear  => { pipe => [ \&clear,       \&rename_files ], minargs => 1 },
+        add => {
+            pipe     => [ \&add_tags, \&rename_files ],
+            minargs  => 2,
+            opt_spec => \@rename_opts;
+        },
+        remove => {
+            pipe     => [ \&remove_tags, \&rename_files ],
+            minargs  => 2,
+            opt_spec => \@rename_opts;
+        },
+        rename => {
+            pipe     => [ \&rename_tag, \&rename_files ],
+            minargs  => 3,
+            opt_spec => \@rename_opts;
+        },
+        mv => {
+            pipe     => [ \&rename_tag, \&rename_files ],
+            minargs  => 3,
+            opt_spec => \@rename_opts;
+        },
+        clear => {
+            pipe     => [ \&clear, \&rename_files ],
+            minargs  => 1,
+            opt_spec => \@rename_opts;
+        },
         search => {
-            pipe => [ \&search_tags, sub { print $_, "\n" for @_ } ],
+            pipe => [ \&search_tags, sub { shift; print $_, "\n" for @_ } ],
             minargs => 2
         },
         list => { pipe => [ \&list_tags, \&print_tag_list ], minargs => 1 },
@@ -33,11 +59,17 @@ sub run {
             pod2usage(1);
         }
 
+        my $opt_spec = $modes{$mode}->{opt_spec};
+
+        if ($opt_spec) {
+            GetOptionsFromArray( \@_, \%options, @$opt_spec );
+        }
+
         my ( $result, $error ) = $pipe->[0]->(@_);
         if ($error) {
             pod2usage( -msg => $error, -exit => 1 );
         }
-        $pipe->[1]->($result);
+        $pipe->[1]->( \%options, $result );
     }
     else {
         pod2usage(1);
@@ -49,12 +81,12 @@ sub add_tags    { modify( shift, '+', @_ ) }
 sub remove_tags { modify( shift, '~', @_ ) }
 
 sub print_tag_list {
-    my $tags = shift;
+    my ( $options, $tags ) = @_;
     print $_, " ", $tags->{$_}, "\n" for sort keys %$tags;
 }
 
 sub rename_files {
-    my $ops = shift;
+    my ( $options, $ops ) = @_;
     for my $op (@$ops) {
         my ( $old, $new ) = @$op;
         next if $old eq $new;
@@ -65,6 +97,10 @@ sub rename_files {
         if ( -e $new ) {
             warn "Skip moving $old to $new: File already exists.\n";
             next;
+        }
+        if ( $options->{'dry-run'} || $options->{verbose} ) {
+            print "$old -> $new\n";
+            next if $options->{'dry-run'};
         }
         rename $old, $new
           or warn "Can't move $old to $new: $!\n";
@@ -221,12 +257,12 @@ squaretag - tag files by using filenames
 
 =head1 SYNOPSIS
 
-  squaretag add TAG FILES...
-  squaretag remove TAG FILES...
-  squaretag search SEARCH FILES...
-  squaretag clear FILES...
-  squaretag rename OLD_TAG NEW_TAG FILES...
+  squaretag add    [--verbose|-v] [--dry-run|-n] TAG FILES...
+  squaretag remove [--verbose|-v] [--dry-run|-n] TAG FILES...
+  squaretag clear  [--verbose|-v] [--dry-run|-n] FILES...
+  squaretag rename [--verbose|-v] [--dry-run|-n] OLD_TAG NEW_TAG FILES...
   squaretag list FILES...
+  squaretag search SEARCH FILES...
 
 =head1 DESCRIPTION
 
