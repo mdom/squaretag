@@ -49,8 +49,12 @@ test_output ['remove','-v', 'foo', 'file[bar,foo].txt'], <<EOF;
 file[bar,foo].txt -> file[bar].txt
 EOF
 
-test_output [qw(clear -v file[bar].txt)], <<EOF;
-file[bar].txt -> file.txt
+test_output [qw(mv -v bar foo file[bar].txt)], <<EOF;
+file[bar].txt -> file[foo].txt
+EOF
+
+test_output [qw(clear -v file[foo].txt)], <<EOF;
+file[foo].txt -> file.txt
 EOF
 
 done_testing;
