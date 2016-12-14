@@ -35,4 +35,42 @@ is_deeply(
     [ [ 'file.txt' => 'file[foo].txt' ] ]
 );
 
+is_deeply(
+    modify( 'year=2016', '+', 'file.txt' ),
+    [ [ 'file.txt' => 'file[year=2016].txt' ] ]
+);
+
+is_deeply(
+    modify( 'year', '+', 'file[year=2015].txt' ),
+    [ [ 'file[year=2015].txt' => 'file[year].txt' ] ]
+);
+
+is_deeply(
+    modify( 'year=2016', '+', 'file[year=2015].txt' ),
+    [ [ 'file[year=2015].txt' => 'file[year=2016].txt' ] ]
+);
+
+is_deeply(
+    modify( 'year', '-', 'file[year=2015].txt' ),
+    [ [ 'file[year=2015].txt' => 'file.txt' ] ],
+    'Remove tagvalue with unvalued tag'
+);
+
+is_deeply(
+    modify( 'year=2015', '-', 'file[year=2015].txt' ),
+    [ [ 'file[year=2015].txt' => 'file.txt' ] ],
+    'Remove tagvalue with identical valued tag'
+);
+
+is_deeply( modify( 'year=2014', '-', 'file[year=2015].txt' ), [] );
+is_deeply(
+    modify( 'year=2016', '+', 'file[year].txt' ),
+    [ [ 'file[year].txt' => 'file[year=2016].txt' ] ]
+);
+
+is_deeply(
+    modify( 'year=current', '+', 'file[year=2015].txt' ),
+    [ [ 'file[year=2015].txt' => 'file[year=current].txt' ] ]
+);
+
 done_testing;

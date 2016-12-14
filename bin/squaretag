@@ -114,7 +114,7 @@ sub check_tags {
     my ( $options, $tags ) = @_;
     for my $tag ( split( /,/, $tags ) ) {
         next if $tag =~ /^\s*$/;
-        if ( $tag !~ /^\w[+-]?/ ) {
+        if ( $tag !~ /^\w+(?:=.+)?[+-]?$/ ) {
             pod2usage( -msg => "Invalid tag $tag.", -exit => 1 );
         }
     }
@@ -188,19 +188,33 @@ sub modify {
         }
 
         push @tags, @add;
-        my %tags = map { $_ => 1 } @tags;
-        for (@remove) {
-            delete $tags{$_};
+        my %tags;
+        for my $tag (@tags) {
+            my ( $key, $val ) = split( /=/, $tag, 2 );
+            $tags{$key} = $val;
+        }
+
+        for my $tag (@remove) {
+            my ( $key, $val ) = split( /=/, $tag, 2 );
+            if ( defined $val ) {
+                if ( defined $tags{$key} and $tags{$key} eq $val ) {
+                    delete $tags{$key};
+                }
+            }
+            delete $tags{$tag};
         }
         @tags = sort keys %tags;
 
         my $new_file;
         if (@tags) {
+            @tags = map { defined $tags{$_} ? "$_=$tags{$_}" : $_ } @tags;
             $new_file = "$base\[" . join( ',', @tags ) . "\]$ext";
         }
         else {
             $new_file = "$base$ext";
         }
+
+        next if $file eq $new_file;
 
         push @ops, [ $file, $new_file ];
     }
@@ -237,7 +251,15 @@ sub search_tags {
     for my $file (@files) {
         my ( $base, $tags, $ext ) = split_file($file);
         my @tags = split( /,/, $tags );
-        my %tags = map { $_ => 1 } @tags;
+
+        my %tags;
+        for my $tag (@tags) {
+            my ( $key, $val ) = split( /=/, $tag, 2 );
+            if ( !$val ) {
+                $val = '0E0';
+            }
+            $tags{$key} = $val;
+        }
         my $check = compile_search($tag_spec);
         push @found, $file if $check->( \%tags );
     }
@@ -246,15 +268,32 @@ sub search_tags {
 
 sub compile_search {
     my $search = shift;
-    my @terms  = split( /\s+|(?=&&|\|\||\(|\)|!)|\b/, $search );
+    my @terms  = split( /\s+|(?=&&|\|\||\(|\)|!|=|<|>)|\b/, $search );
     my $code   = 'sub { my $tags = shift;';
+    my $rs     = 0;
     for my $term (@terms) {
         next if $term =~ /^s*$/;
         if ( $term =~ /^\w+$/ ) {
-            $code .= "(exists \$tags->{$term})";
+            if ($rs) {
+                $code .= qq{"$term"};
+                $rs = 0;
+            }
+            else {
+                $code .= "\$tags->{$term}";
+            }
+
         }
         elsif ( $term =~ /^&&|\|\||\(|\)|!$/ ) {
             $code .= $term;
+        }
+        elsif ( $term eq '=' ) {
+            $code .= ' eq ';
+            $rs = 1;
+        }
+        elsif ( $term =~ /^<|>$/ ) {
+            $code .= $term;
+            $rs = 1;
+
         }
         else {
             die "Unknown term $term in search.\n";
