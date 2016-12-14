@@ -33,7 +33,7 @@ sub run {
             minargs => 2,
             opt_spec => \@rename_opts,
             check    => \&is_tag_file,
-            alias    => ['rm'],
+            alias    => [ 'rm', 'delete', 'del' ],
         },
         rename => {
             cmd      => sub { rename_files( shift, rename_tag(@_) ) },
