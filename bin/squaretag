@@ -316,13 +316,30 @@ Suppose the current directory contains the following files:
 
 Now you want to add the tag I<family> to all pictures.
 
-  $ squaretag add family *
+  $ squaretag add -v family *
+  picture01.jpg -> picture01[family].jpg
+  picture02 -> picture02[family]
 
-The filenames now contain the tag I<family>:
+Files can have multiple tags
 
-  $ ls
-  picture01[family].jpg
-  pciture02[family]
+  $ squaretag add -v myself picture01[family].jpg
+  picture01[family].jpg -> picture01[family,myself].jpg
+
+You can rename single tags
+
+  $ squaretag rename -v myself me picture01[family,myself].jpg
+  picture01[family,myself].jpg -> picture01[family,me].jpg
+
+Or delete a tag
+
+  $ squaretag remove me -v picture01[family,me].jpg
+  picture01[family,me].jpg -> picture01[family].jpg
+
+And if you have enough, you can simple clear all tags
+
+  $ squaretag clear *
+  picture01[family].jpg -> picture01.jpg
+  picture02[family] -> picture02
 
 =head1 COMMANDS
 
