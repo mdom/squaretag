@@ -414,7 +414,7 @@ Rename OLD_TAG in NEW_TAG in all FILES.
 List and count all tags for FILES. The tags are sorted in descending
 order of frequency.
 
-=item1 untagged FILES...
+=item untagged FILES...
 
 List all FILES without a tag.
 
