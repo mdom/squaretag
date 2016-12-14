@@ -13,18 +13,18 @@ my $tempdir = tempdir( CLEANUP => 1 );
 chdir $tempdir;
 
 my $fh;
-open($fh,'>','file.txt');
+open( $fh, '>', 'file.txt' );
 
 sub capture {
-    my ( @args ) = @_;
+    my (@args) = @_;
     my $got;
     local *STDOUT;
-    open STDOUT,'>',\$got;
+    open STDOUT, '>', \$got;
     local *STDERR;
-    open STDERR,'>',\$got;
+    open STDERR, '>', \$got;
     eval { run(@args) };
-    if ( $@ ) {
-	    $got .= $@;
+    if ($@) {
+        $got .= $@;
     }
     return $got;
 }
@@ -49,7 +49,7 @@ is capture(qw(add -v foo file[bar].txt)), <<EOF;
 file[bar].txt -> file[bar,foo].txt
 EOF
 
-is capture('remove','-v', 'foo', 'file[bar,foo].txt'), <<EOF;
+is capture( 'remove', '-v', 'foo', 'file[bar,foo].txt' ), <<EOF;
 file[bar,foo].txt -> file[bar].txt
 EOF
 
@@ -69,9 +69,22 @@ is capture(qw(add -v foo bar.txt)), <<EOF;
 Skip missing file bar.txt.
 EOF
 
-BEGIN { *CORE::GLOBAL::exit = sub (;$) { } } 
+BEGIN {
+    *CORE::GLOBAL::exit = sub (;$) { }
+}
 $0 = "$Bin/../bin/squaretag";
 
 like capture(qw(add !foo file.txt)), qr/^Invalid tag !foo/;
+
+open( $fh, '>', 'bar[foo].txt' );
+open( $fh, '>', 'bar.txt' );
+
+is capture(qw(add -v foo bar.txt)), <<EOF;
+Skip moving bar.txt to bar[foo].txt: File already exists.
+EOF
+
+is capture(qw(search foo;bar foo.txt)), <<EOF;
+Unknown term ; in search.
+EOF
 
 done_testing;
