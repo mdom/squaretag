@@ -199,9 +199,22 @@ sub search_tags {
 
 sub compile_search {
     my $search = shift;
-    $search =~ s/(\w+)/(exists \$tags->{$1})/g;
-    my $code = 'sub { my $tags = shift;' . $search . '}';
-    my $sub  = eval $code;
+    my @terms  = split( /\s+|(?=&&|\|\||\(|\)|!)|\b/, $search );
+    my $code   = 'sub { my $tags = shift;';
+    for my $term (@terms) {
+        next if $term =~ /^s*$/;
+        if ( $term =~ /^\w+$/ ) {
+            $code .= "(exists \$tags->{$term})";
+        }
+        elsif ( $term =~ /^&&|\|\||\(|\)|!$/ ) {
+            $code .= $term;
+        }
+        else {
+            die "Unknown term $term in search.\n";
+        }
+    }
+    $code .= '}';
+    my $sub = eval $code;
     die "$@" if "$@";
     return $sub;
 }
