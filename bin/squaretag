@@ -153,10 +153,10 @@ sub modify {
 
     for ( split( /,/, $tag_spec ) ) {
         next if /^\s*$/;
-        if (/^(.*)-$/) {
+        if (/^(.+)-$/) {
             push @remove, $1;
         }
-        elsif (/^(.*)\+$/) {
+        elsif (/^(.+)\+$/) {
             push @add, $1;
         }
         elsif ( $default eq '+' ) {
