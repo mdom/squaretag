@@ -1,3 +1,5 @@
+=for html <a href="https://travis-ci.org/mdom/squaretag"><img src="https://travis-ci.org/mdom/squaretag.svg?branch=master"></a>  <a href='https://coveralls.io/r/mdom/squaretag?branch=master'><img src='https://coveralls.io/repos/mdom/squaretag/badge.png?branch=master' alt='Coverage Status' /></a>
+
 =head1 NAME
 
 squaretag - tag files by using filenames
