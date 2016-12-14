@@ -42,12 +42,12 @@ The filenames now contain the tag I<family>:
 =item add TAG FILES...
 
 Add TAG to FILES. TAG is a comma seperated list of tags to add. If
-a tag is prefixed by I<~> this tag will be removed from the file.
+a tag has a suffix of I<-> this tag will be removed from the file.
 
 =item remove TAG FILES...
 
 Remove TAG from FILES. TAG is a comma seperated list of tags to remove. If
-a tag is prefixed by I<+> this tag will be added to the file.
+a tag has a suffix of I<+> this tag will be added to the file.
 
 =item search SPEC FILES...
 

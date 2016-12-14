@@ -79,7 +79,7 @@ sub run {
 }
 
 sub add_tags    { modify( shift, '+', @_ ) }
-sub remove_tags { modify( shift, '~', @_ ) }
+sub remove_tags { modify( shift, '-', @_ ) }
 
 sub print_tag_list {
     my ( $options, $tags ) = @_;
@@ -121,16 +121,16 @@ sub modify {
 
     for ( split( /,/, $tag_spec ) ) {
         next if /^\s*$/;
-        if (/^~(.*)$/) {
+        if (/^(.*)-$/) {
             push @remove, $1;
         }
-        elsif (/^\+(.*)$/) {
+        elsif (/^(.*)\+$/) {
             push @add, $1;
         }
         elsif ( $default eq '+' ) {
             push @add, $_;
         }
-        elsif ( $default eq '~' ) {
+        elsif ( $default eq '-' ) {
             push @remove, $_;
         }
     }
@@ -298,12 +298,12 @@ The filenames now contain the tag I<family>:
 =item add TAG FILES...
 
 Add TAG to FILES. TAG is a comma seperated list of tags to add. If
-a tag is prefixed by I<~> this tag will be removed from the file.
+a tag has a suffix of I<-> this tag will be removed from the file.
 
 =item remove TAG FILES...
 
 Remove TAG from FILES. TAG is a comma seperated list of tags to remove. If
-a tag is prefixed by I<+> this tag will be added to the file.
+a tag has a suffix of I<+> this tag will be added to the file.
 
 =item search SPEC FILES...
 
