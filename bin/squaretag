@@ -335,6 +335,11 @@ Or delete a tag
   $ squaretag remove me -v picture01[family,me].jpg
   picture01[family,me].jpg -> picture01[family].jpg
 
+And what would tags be good for if you couldn't search for them
+
+  $ squaretag search 'family && !me' *
+  picture02[family]
+
 And if you have enough, you can simple clear all tags
 
   $ squaretag clear *
