@@ -62,7 +62,8 @@ sub run {
         my $opt_spec = $modes{$mode}->{opt_spec};
 
         if ($opt_spec) {
-            GetOptionsFromArray( \@_, \%options, @$opt_spec );
+            GetOptionsFromArray( \@_, \%options, @$opt_spec )
+              or pod2usage(1);
         }
 
         my ( $result, $error ) = $pipe->[0]->(@_);
