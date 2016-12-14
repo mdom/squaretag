@@ -16,7 +16,7 @@ sub run {
 
     my $mode = shift;
 
-    my @rename_opts = [ 'verbose|v!', 'dry-run|n!' ];
+    my @rename_opts = qw(verbose|v! dry-run|n!);
 
     my %modes = (
         add => {
