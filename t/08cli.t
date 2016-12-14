@@ -57,4 +57,8 @@ test_output [qw(clear -v file[foo].txt)], <<EOF;
 file[foo].txt -> file.txt
 EOF
 
+test_output [qw(untagged file.txt)], <<EOF;
+file.txt
+EOF
+
 done_testing;

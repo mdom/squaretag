@@ -52,6 +52,10 @@ sub run {
             cmd => sub { shift; print $_, "\n" for @{ search_tags(@_) } },
             minargs => 2
         },
+        untagged => {
+            cmd => sub { shift; print $_, "\n" for @{ find_untagged(@_) } },
+            minargs => 1
+        },
         list => {
             cmd     => sub { print_tag_list( shift, list_tags(@_) ) },
             minargs => 1
@@ -215,6 +219,18 @@ sub clear {
     return \@ops;
 }
 
+sub find_untagged {
+    my @files = @_;
+    my @found;
+    for my $file (@files) {
+        my ( $base, $tags, $ext ) = split_file($file);
+        if ( !$tags ) {
+            push @found, $file;
+        }
+    }
+    return \@found;
+}
+
 sub search_tags {
     my ( $tag_spec, @files ) = @_;
     my @found;
@@ -324,7 +340,7 @@ at the end of the filename or just before the last dot.
 
 Suppose the current directory contains the following files:
 
-  $ ls 
+  $ squaretag untagged
   picture01.jpg
   picture02
 
@@ -396,6 +412,10 @@ Rename OLD_TAG in NEW_TAG in all FILES.
 
 List and count all tags for FILES. The tags are sorted in descending
 order of frequency.
+
+=item1 untagged FILES...
+
+List all FILES without a tag.
 
 =back
 
