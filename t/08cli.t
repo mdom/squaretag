@@ -41,6 +41,14 @@ test_output [qw(search bar file[bar].txt)], <<EOF;
 file[bar].txt
 EOF
 
+test_output [qw(add -v foo file[bar].txt)], <<EOF;
+file[bar].txt -> file[bar,foo].txt
+EOF
+
+test_output ['remove','-v', 'foo', 'file[bar,foo].txt'], <<EOF;
+file[bar,foo].txt -> file[bar].txt
+EOF
+
 test_output [qw(clear -v file[bar].txt)], <<EOF;
 file[bar].txt -> file.txt
 EOF
