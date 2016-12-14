@@ -26,21 +26,22 @@ sub run {
             cmd      => sub { rename_files( shift, add_tags(@_) ) },
             minargs  => 2,
             opt_spec => \@rename_opts,
-            check    => \&is_tag_file,
+            check => [ \&is_tag_file, \&check_tags ],
         },
         remove => {
             cmd     => sub { rename_files( shift, remove_tags(@_) ) },
             minargs => 2,
             opt_spec => \@rename_opts,
-            check    => \&is_tag_file,
+            check    => [ \&is_tag_file, \&check_tags ],
             alias    => [ 'rm', 'delete', 'del' ],
         },
         rename => {
             cmd      => sub { rename_files( shift, rename_tag(@_) ) },
             minargs  => 3,
             opt_spec => \@rename_opts,
-            check    => \&is_tag_file,
-            alias    => ['mv'],
+            check =>
+              [ \&is_tag_file, sub { check_tags( shift, "$_[0],$_[1]" ) } ],
+            alias => ['mv'],
         },
         clear => {
             cmd      => sub { rename_files( shift, clear(@_) ) },
@@ -82,8 +83,10 @@ sub run {
               or pod2usage(1);
         }
 
-        if ( my $check = $modes{$mode}->{check} ) {
-            $check->( \%options, @_ );
+        if ( my $checks = $modes{$mode}->{check} ) {
+            for my $check (@$checks) {
+                $check->( \%options, @_ );
+            }
         }
 
         $cmd->( \%options, @_ );
@@ -101,6 +104,17 @@ sub is_tag_file {
     my ( $options, $tag ) = @_;
     pod2usage( -msg => 'Tag is also a file.', -exit => 1 )
       if -e $tag && !$options->{force};
+}
+
+sub check_tags {
+    my ( $options, $tags ) = @_;
+    for my $tag ( split( /,/, $tags ) ) {
+        next if $tag =~ /^\s*$/;
+        if ( $tag !~ /^\w[+-]?/ ) {
+            pod2usage( -msg => "Invalid tag $tag.", -exit => 1 );
+        }
+    }
+    return;
 }
 
 sub print_tag_list {
