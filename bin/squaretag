@@ -191,17 +191,19 @@ sub search_tags {
         my ( $base, $tags, $ext ) = split_file($file);
         my @tags = split( /,/, $tags );
         my %tags = map { $_ => 1 } @tags;
-        for ( split( /,/, $tag_spec ) ) {
-            if (/^~(.*)$/) {
-                next FILE if defined $tags{$1};
-            }
-            elsif (/^\+?(.*)$/) {
-                next FILE if !defined $tags{$1};
-            }
-        }
-        push @found, $file;
+        my $check = compile_search($tag_spec);
+        push @found, $file if $check->( \%tags );
     }
     return \@found;
+}
+
+sub compile_search {
+    my $search = shift;
+    $search =~ s/(\w+)/(exists \$tags->{$1})/g;
+    my $code = 'sub { my $tags = shift;' . $search . '}';
+    my $sub  = eval $code;
+    die "$@" if "$@";
+    return $sub;
 }
 
 sub list_tags {
@@ -305,10 +307,13 @@ a tag is prefixed by I<+> this tag will be added to the file.
 
 =item search SPEC FILES...
 
-List all FILES that match the search SPEC. SPEC is a comma seperated
-list of search terms. A search term is either in the form I<tag> or
-I<~tag>, either adding or removing all files that are or are not tagged
-with I<tag>. Search terms are combined by I<AND>.
+List all FILES that match the search SPEC. SPEC can contain tags and
+the usual boolean operators.
+
+For example:
+
+  read && good
+  !read || (not_read && prio )
 
 =item clear FILES...
 
