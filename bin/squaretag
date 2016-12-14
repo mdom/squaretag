@@ -181,8 +181,7 @@ sub modify {
     for my $file (@files) {
         my ( $base, $tags, $ext ) = split_file($file);
 
-        my ( @old_tags, @tags );
-        @old_tags = @tags = split( /,/, $tags );
+        my @tags = split( /,/, $tags );
 
         if ( !@tags and !@add ) {
             next FILE;
