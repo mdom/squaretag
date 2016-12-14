@@ -16,7 +16,7 @@ sub run {
 
     my $mode = shift;
 
-    my @rename_opts = qw(verbose|v! dry-run|n!);
+    my @rename_opts = qw(verbose|v! dry-run|n! force|f!);
 
     my %modes = (
         add => {
@@ -74,7 +74,7 @@ sub run {
         }
 
         if ( my $check = $modes{$mode}->{check} ) {
-            $check->(@_);
+            $check->(\%options,@_);
         }
 
         $cmd->( \%options, @_ );
@@ -89,7 +89,9 @@ sub add_tags    { modify( shift, '+', @_ ) }
 sub remove_tags { modify( shift, '-', @_ ) }
 
 sub is_tag_file {
-    pod2usage( -msg => 'Tag is also a file.', -exit => 1 ) if -e $_[0];
+    my ( $options, $tag ) = @_;
+    pod2usage( -msg => 'Tag is also a file.', -exit => 1 )
+      if -e $tag && !$options->{force};
 }
 
 sub print_tag_list {
@@ -282,10 +284,10 @@ squaretag - tag files by using filenames
 
 =head1 SYNOPSIS
 
-  squaretag add    [--verbose|-v] [--dry-run|-n] TAG FILES...
-  squaretag remove [--verbose|-v] [--dry-run|-n] TAG FILES...
-  squaretag clear  [--verbose|-v] [--dry-run|-n] FILES...
-  squaretag rename [--verbose|-v] [--dry-run|-n] OLD_TAG NEW_TAG FILES...
+  squaretag add    [--verbose|-v] [--dry-run|-n] [--force|-f] TAG FILES...
+  squaretag remove [--verbose|-v] [--dry-run|-n] [--force|-f] TAG FILES...
+  squaretag clear  [--verbose|-v] [--dry-run|-n] [--force|-f] FILES...
+  squaretag rename [--verbose|-v] [--dry-run|-n] [--force|-f] OLD_TAG NEW_TAG FILES...
   squaretag list FILES...
   squaretag search SEARCH FILES...
 
