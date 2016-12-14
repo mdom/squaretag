@@ -20,39 +20,42 @@ sub run {
 
     my %modes = (
         add => {
-            pipe     => [ \&add_tags, \&rename_files ],
+            cmd      => sub { rename_files( shift, add_tags(@_) ) },
             minargs  => 2,
             opt_spec => \@rename_opts,
         },
         remove => {
-            pipe     => [ \&remove_tags, \&rename_files ],
-            minargs  => 2,
+            cmd     => sub { rename_files( shift, remove_tags(@_) ) },
+            minargs => 2,
             opt_spec => \@rename_opts,
         },
         rename => {
-            pipe     => [ \&rename_tag, \&rename_files ],
+            cmd      => sub { rename_files( shift, rename_tag(@_) ) },
             minargs  => 3,
             opt_spec => \@rename_opts,
         },
         mv => {
-            pipe     => [ \&rename_tag, \&rename_files ],
+            cmd      => sub { rename_files( shift, rename_tag(@_) ) },
             minargs  => 3,
             opt_spec => \@rename_opts,
         },
         clear => {
-            pipe     => [ \&clear, \&rename_files ],
+            cmd      => sub { rename_files( shift, clear(@_) ) },
             minargs  => 1,
             opt_spec => \@rename_opts,
         },
         search => {
-            pipe => [ \&search_tags, sub { print $_, "\n" for @{ $_[1] } } ],
+            cmd => sub { shift; print $_, "\n" for @{ search_tags(@_) } },
             minargs => 2
         },
-        list => { pipe => [ \&list_tags, \&print_tag_list ], minargs => 1 },
+        list => {
+            cmd     => sub { print_tag_list( shift, list_tags(@_) ) },
+            minargs => 1
+        },
     );
 
     if ( $mode && $modes{$mode} ) {
-        my $pipe    = $modes{$mode}->{pipe};
+        my $cmd     = $modes{$mode}->{cmd};
         my $minargs = $modes{$mode}->{minargs};
 
         if ( defined $minargs && @_ < $minargs ) {
@@ -66,11 +69,9 @@ sub run {
               or pod2usage(1);
         }
 
-        my ( $result, $error ) = $pipe->[0]->(@_);
-        if ($error) {
-            pod2usage( -msg => $error, -exit => 1 );
         }
-        $pipe->[1]->( \%options, $result );
+
+        $cmd->( \%options, @_ );
     }
     else {
         pod2usage(1);
