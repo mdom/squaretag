@@ -45,7 +45,7 @@ sub run {
             opt_spec => \@rename_opts,
         },
         search => {
-            pipe => [ \&search_tags, sub { shift; print $_, "\n" for @_ } ],
+            pipe => [ \&search_tags, sub { print $_, "\n" for @{ $_[1] } } ],
             minargs => 2
         },
         list => { pipe => [ \&list_tags, \&print_tag_list ], minargs => 1 },
