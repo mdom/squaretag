@@ -87,4 +87,6 @@ is capture(qw(search foo;bar foo.txt)), <<EOF;
 Unknown term ; in search.
 EOF
 
+chdir("..");
+
 done_testing;
