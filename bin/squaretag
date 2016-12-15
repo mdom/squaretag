@@ -3,6 +3,7 @@
 use strict;
 use warnings;
 use Pod::Usage qw(pod2usage);
+use Scalar::Util qw(looks_like_number);
 use Getopt::Long
   qw(GetOptionsFromArray :config bundling no_ignore_case no_getopt_compat require_order);
 
@@ -255,9 +256,6 @@ sub search_tags {
         my %tags;
         for my $tag (@tags) {
             my ( $key, $val ) = split( /=/, $tag, 2 );
-            if ( !$val ) {
-                $val = '0E0';
-            }
             $tags{$key} = $val;
         }
         my $check = compile_search($tag_spec);
@@ -270,30 +268,30 @@ sub compile_search {
     my $search = shift;
     my @terms  = split( /\s+|(?=&&|\|\||\(|\)|!|=|<|>)|\b/, $search );
     my $code   = 'sub { my $tags = shift;';
-    my $rs     = 0;
-    for my $term (@terms) {
+    while ( my $term = shift @terms ) {
         next if $term =~ /^s*$/;
         if ( $term =~ /^\w+$/ ) {
-            if ($rs) {
-                $code .= qq{"$term"};
-                $rs = 0;
+            if ( defined $terms[0] && $terms[0] =~ /^=|<|>$/ ) {
+                my ( $op, $operand ) = splice( @terms, 0, 2 );
+                $op = $op eq '=' ? 'eq' : $op;
+                if ( !defined $operand || $operand !~ /^\w+$/ ) {
+                    die "No operand on right side of $term.\n";
+                }
+		if ( ! looks_like_number($operand) ) {
+			if ( $op eq '<' or $op eq '>' ) {
+				die "Operand $operand isn't numeric in numerical comparison.\n";
+			}
+			$operand = qq{"$operand"};
+		}
+                $code .= qq{ defined \$tags->{$term} && }
+                  . qq{\$tags->{$term} $op $operand};
             }
             else {
-                $code .= "\$tags->{$term}";
+                $code .= " exists \$tags->{$term}";
             }
-
         }
         elsif ( $term =~ /^&&|\|\||\(|\)|!$/ ) {
-            $code .= $term;
-        }
-        elsif ( $term eq '=' ) {
-            $code .= ' eq ';
-            $rs = 1;
-        }
-        elsif ( $term =~ /^<|>$/ ) {
-            $code .= $term;
-            $rs = 1;
-
+            $code .= " $term";
         }
         else {
             die "Unknown term $term in search.\n";
