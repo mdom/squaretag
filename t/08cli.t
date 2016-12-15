@@ -70,7 +70,7 @@ Skip missing file bar.txt.
 EOF
 
 BEGIN {
-    *CORE::GLOBAL::exit = sub (;$) { }
+    *CORE::GLOBAL::exit = sub (;$) { die }
 }
 $0 = "$Bin/../bin/squaretag";
 
@@ -86,6 +86,10 @@ EOF
 is capture(qw(search foo;bar foo.txt)), <<EOF;
 Unknown term ; in search.
 EOF
+
+like capture(), qr/^Usage:/;
+
+like capture('add'), qr/^Usage:/;
 
 chdir("..");
 
