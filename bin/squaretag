@@ -277,12 +277,13 @@ sub compile_search {
                 if ( !defined $operand || $operand !~ /^\w+$/ ) {
                     die "No operand on right side of $term.\n";
                 }
-		if ( ! looks_like_number($operand) ) {
-			if ( $op eq '<' or $op eq '>' ) {
-				die "Operand $operand isn't numeric in numerical comparison.\n";
-			}
-			$operand = qq{"$operand"};
-		}
+                if ( !looks_like_number($operand) ) {
+                    if ( $op eq '<' or $op eq '>' ) {
+                        die
+"Operand $operand isn't numeric in numerical comparison.\n";
+                    }
+                    $operand = qq{"$operand"};
+                }
                 $code .= qq{ defined \$tags->{$term} && }
                   . qq{\$tags->{$term} $op $operand};
             }
