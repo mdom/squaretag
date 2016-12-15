@@ -4,9 +4,21 @@ use warnings;
 use ExtUtils::MakeMaker;
 
 WriteMakefile(
-    NAME      => "App::squaretag",
-    VERSION   => 0.02,
-    EXE_FILES => ['bin/squaretag'],
+    NAME       => "App::squaretag",
+    VERSION    => 0.03,
+    EXE_FILES  => ['bin/squaretag'],
+    META_MERGE => {
+        "meta-spec" => { version => 2 },
+        resources   => {
+            repository => {
+                type => 'git',
+                url =>
+                  'git://github.com/mdom/squaretag.git',
+                web =>
+                  'https://github.com/mdom/squaretag',
+            },
+        },
+    },
 );
 
 sub MY::c_o {
