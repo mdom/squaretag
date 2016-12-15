@@ -22,4 +22,52 @@ is_deeply( search_tags( 'foo', 'file[foo].txt', 'test[bar].txt' ),
 is_deeply( search_tags( 'bar || foo', 'file[foo].txt', 'test[bar].txt' ),
     [ 'file[foo].txt', 'test[bar].txt' ] );
 
+is_deeply( search_tags( 'year', 'file[year=2009].txt' ),
+    ['file[year=2009].txt'] );
+is_deeply( search_tags( 'year=2009', 'file[year=2009].txt' ),
+    ['file[year=2009].txt'] );
+is_deeply( search_tags( 'year=2008', 'file[year=2009].txt' ), [] );
+is_deeply( search_tags( 'year>2008', 'file[year=2009].txt' ),
+    ['file[year=2009].txt'] );
+is_deeply( search_tags( 'year<2010', 'file[year=2009].txt' ),
+    ['file[year=2009].txt'] );
+is_deeply( search_tags( 'year>2010', 'file[year=2009].txt' ), [] );
+is_deeply( search_tags( 'year>2010', 'file[foo].txt' ),       [] );
+is_deeply( search_tags( 'author=mdom', 'file[author=mdom].txt' ),
+    ['file[author=mdom].txt'] );
+is_deeply( search_tags( '!author=mdom',  'file[author=mdom].txt' ), [] );
+
+BEGIN {
+	    *CORE::GLOBAL::exit = sub (;$) { }
+    }
+
+sub capture {
+    my $code = shift;
+    my $got;
+    local *STDOUT;
+    open STDOUT, '>', \$got;
+    local *STDERR;
+    open STDERR, '>', \$got;
+    eval { $code->(); };
+    if ($@) {
+        $got .= $@;
+    }
+    return $got;
+}
+
+is  capture( sub { search_tags( 'author < mdom', 'file[author=mdom].txt' ) } ), <<EOF;
+Operand mdom isn't numeric in numerical comparison.
+EOF
+is  capture( sub { search_tags( 'author > mdom', 'file[author=mdom].txt' ) } ), <<EOF;
+Operand mdom isn't numeric in numerical comparison.
+EOF
+
+is  capture( sub { search_tags( 'author > ', 'file[author=mdom].txt' ) } ), <<EOF;
+No operand on right side of author.
+EOF
+
+is  capture( sub { search_tags( 'author > &&', 'file[author=mdom].txt' ) } ), <<EOF;
+No operand on right side of author.
+EOF
+
 done_testing;
