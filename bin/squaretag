@@ -248,6 +248,7 @@ sub find_untagged {
 sub search_tags {
     my ( $tag_spec, @files ) = @_;
     my @found;
+    my $check = compile_search($tag_spec);
   FILE:
     for my $file (@files) {
         my ( $base, $tags, $ext ) = split_file($file);
@@ -258,7 +259,6 @@ sub search_tags {
             my ( $key, $val ) = split( /=/, $tag, 2 );
             $tags{$key} = $val;
         }
-        my $check = compile_search($tag_spec);
         push @found, $file if $check->( \%tags );
     }
     return \@found;
