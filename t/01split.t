@@ -38,6 +38,14 @@ my @tests = (
           [ 'foo[first book]', 'read,good', '.ext' ] =>
           'File with tags and squares and extension'
     ],
+    [
+        '/foo/bar[quux].txt' => [ '/foo/bar', 'quux', '.txt' ] =>
+          'File with path'
+    ],
+    [
+        'c:\foo\bar[quux].txt' => [ 'c:\foo\bar', 'quux', '.txt' ] =>
+          'File with windows path'
+    ],
 );
 
 for my $t (@tests) {
