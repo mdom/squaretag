@@ -414,6 +414,15 @@ And if you have enough, you can simple clear all tags
   picture01[family].jpg -> picture01.jpg
   picture02[family] -> picture02
 
+Tags can also have values:
+
+  $ squaretag add read=2016 book.epub
+  $ squaretag search 'read>2010' *
+  books[read=2016].epub
+  $ squaretag search 'read<2010' *
+  $ squaretag search 'read=2016' *
+  books[read=2016].epub
+
 =head1 COMMANDS
 
 =over 4
@@ -437,6 +446,10 @@ For example:
 
   read && good
   !read || (not_read && prio )
+
+There are three additional operators I<<>, I<=> and I<>> to handle tags
+with values. The I<=> compares its operand as strings, the other two
+just work on numerical tags.
 
 =item clear FILES...
 
