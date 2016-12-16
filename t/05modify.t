@@ -73,4 +73,14 @@ is_deeply(
     [ [ 'file[year=2015].txt' => 'file[year=current].txt' ] ]
 );
 
+is_deeply(
+    modify( { separator => ' ' }, 'bar', '+', 'file[foo].txt' ),
+    [ [ 'file[foo].txt' => 'file[bar foo].txt' ] ]
+);
+
+is_deeply(
+    modify( { separator => ' ' }, 'bar', '-', 'file[bar foo].txt' ),
+    [ [ 'file[bar foo].txt' => 'file[foo].txt' ] ]
+);
+
 done_testing;

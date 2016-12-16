@@ -16,7 +16,10 @@ if ( !caller ) {
 
 sub run {
 
-    my %options;
+    my %options = ( separator => ',', );
+
+    GetOptionsFromArray( \@_, \%options, 'separator|s=s' )
+      or pod2usage();
 
     my $mode = shift;
 
@@ -24,20 +27,29 @@ sub run {
 
     my %modes = (
         add => {
-            cmd      => sub { rename_files( shift, add_tags(@_) ) },
+            cmd => sub {
+                my $options = shift;
+                rename_files( $options, add_tags( $options, @_ ) );
+            },
             minargs  => 2,
             opt_spec => \@rename_opts,
-            check => [ \&is_tag_file, \&check_tags ],
+            check    => [ \&is_tag_file, \&check_tags ],
         },
         remove => {
-            cmd     => sub { rename_files( shift, remove_tags(@_) ) },
-            minargs => 2,
+            cmd => sub {
+                my $options = shift;
+                rename_files( $options, remove_tags( $options, @_ ) );
+            },
+            minargs  => 2,
             opt_spec => \@rename_opts,
             check    => [ \&is_tag_file, \&check_tags ],
             alias    => [ 'rm', 'delete', 'del' ],
         },
         rename => {
-            cmd      => sub { rename_files( shift, rename_tag(@_) ) },
+            cmd => sub {
+                my $options = shift;
+                rename_files( $options, rename_tag( $options, @_ ) );
+            },
             minargs  => 3,
             opt_spec => \@rename_opts,
             check =>
@@ -50,7 +62,7 @@ sub run {
             opt_spec => \@rename_opts,
         },
         search => {
-            cmd => sub { shift; print $_, "\n" for @{ search_tags(@_) } },
+            cmd => sub { print $_, "\n" for @{ search_tags(@_) } },
             minargs => 2
         },
         untagged => {
@@ -58,7 +70,7 @@ sub run {
             minargs => 1
         },
         list => {
-            cmd     => sub { print_tag_list( shift, list_tags(@_) ) },
+            cmd     => sub { print_tag_list( list_tags(@_) ) },
             minargs => 1
         },
     );
@@ -102,8 +114,8 @@ sub run {
     return;
 }
 
-sub add_tags    { modify( shift, '+', @_ ) }
-sub remove_tags { modify( shift, '-', @_ ) }
+sub add_tags    { modify( shift, shift, '+', @_ ) }
+sub remove_tags { modify( shift, shift, '-', @_ ) }
 
 sub is_tag_file {
     my ( $options, $tag ) = @_;
@@ -113,7 +125,8 @@ sub is_tag_file {
 
 sub check_tags {
     my ( $options, $tags ) = @_;
-    for my $tag ( split( /,/, $tags ) ) {
+    my $sep = $options->{separator} || ',';
+    for my $tag ( split( $sep, $tags ) ) {
         next if $tag =~ /^\s*$/;
         if ( $tag !~ /^\w+(?:=.+)?[+-]?$/ ) {
             pod2usage( -msg => "Invalid tag $tag.", -exit => 1 );
@@ -123,7 +136,7 @@ sub check_tags {
 }
 
 sub print_tag_list {
-    my ( $options, $tags ) = @_;
+    my ($tags) = @_;
     print $_, " ", $tags->{$_}, "\n" for sort keys %$tags;
 }
 
@@ -151,12 +164,14 @@ sub rename_files {
 }
 
 sub modify {
+    my $options = ref $_[0] eq 'HASH' ? shift : {};
     my ( $tag_spec, $default, @files ) = @_;
     my ( @add, @remove );
 
     $default ||= '+';
+    my $sep = $options->{separator} || ',';
 
-    for ( split( /,/, $tag_spec ) ) {
+    for ( split( $sep, $tag_spec ) ) {
         next if /^\s*$/;
         if (/^(.+)-$/) {
             push @remove, $1;
@@ -182,7 +197,7 @@ sub modify {
     for my $file (@files) {
         my ( $base, $tags, $ext ) = split_file($file);
 
-        my @tags = split( /,/, $tags );
+        my @tags = split( $sep, $tags );
 
         if ( !@tags and !@add ) {
             next FILE;
@@ -209,7 +224,7 @@ sub modify {
         my $new_file;
         if (@tags) {
             @tags = map { defined $tags{$_} ? "$_=$tags{$_}" : $_ } @tags;
-            $new_file = "$base\[" . join( ',', @tags ) . "\]$ext";
+            $new_file = "$base\[" . join( $sep, @tags ) . "\]$ext";
         }
         else {
             $new_file = "$base$ext";
@@ -246,13 +261,15 @@ sub find_untagged {
 }
 
 sub search_tags {
+    my $options = ref $_[0] eq 'HASH' ? shift : {};
     my ( $tag_spec, @files ) = @_;
+    my $sep = $options->{separator} || ',';
     my @found;
     my $check = compile_search($tag_spec);
   FILE:
     for my $file (@files) {
         my ( $base, $tags, $ext ) = split_file($file);
-        my @tags = split( /,/, $tags );
+        my @tags = split( $sep, $tags );
 
         my %tags;
         for my $tag (@tags) {
@@ -305,30 +322,34 @@ sub compile_search {
 }
 
 sub list_tags {
+    my $options = ref $_[0] eq 'HASH' ? shift : {};
     my (@files) = @_;
+    my $sep = $options->{separator} || ',';
     my %tags;
     for my $file (@files) {
         my ( $base, $tags, $ext ) = split_file($file);
-        my @tags = split( /,/, $tags );
+        my @tags = split( $sep, $tags );
         $tags{$_}++ for @tags;
     }
     return \%tags;
 }
 
 sub rename_tag {
+    my $options = ref $_[0] eq 'HASH' ? shift : {};
     my ( $old, $new, @files ) = @_;
+    my $sep = $options->{separator} || ',';
     return [] if $old eq $new;
     my @ops;
   FILE:
     for my $file (@files) {
         my ( $base, $tags, $ext ) = split_file($file);
-        my @tags = split( /,/, $tags );
+        my @tags = split( $sep, $tags );
         my %tags = map { $_ => 1 } @tags;
         if ( exists $tags{$old} ) {
             delete $tags{$old};
             $tags{$new} = 1;
             @tags = sort keys %tags;
-            my $new_file = "$base\[" . join( ',', @tags ) . "\]$ext";
+            my $new_file = "$base\[" . join( $sep, @tags ) . "\]$ext";
             push @ops, [ $file, $new_file ];
         }
     }
