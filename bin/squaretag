@@ -383,13 +383,13 @@ squaretag - tag files by using filenames
 
 =head1 SYNOPSIS
 
-  squaretag add    [--verbose|-v] [--dry-run|-n] [--force|-f] TAG FILES...
-  squaretag remove [--verbose|-v] [--dry-run|-n] [--force|-f] TAG FILES...
-  squaretag clear  [--verbose|-v] [--dry-run|-n] [--force|-f] FILES...
-  squaretag rename [--verbose|-v] [--dry-run|-n] [--force|-f] OLD_TAG NEW_TAG FILES...
-  squaretag list FILES...
-  squaretag search SEARCH FILES...
-  squaretag untagged FILES...
+  squaretag [-s SEP] add    [-v] [-n] [-f] TAG FILES...
+  squaretag [-s SEP] remove [-v] [-n] [-f] TAG FILES...
+  squaretag          clear  [-v] [-n] [-f] FILES...
+  squaretag [-s SEP] rename [-v] [-n] [-f] OLD_TAG NEW_TAG FILES...
+  squaretag [-s SEP] list FILES...
+  squaretag [-s SEP] search SEARCH FILES...
+  squaretag          untagged FILES...
 
 =head1 DESCRIPTION
 
@@ -492,6 +492,25 @@ order of frequency.
 List all FILES without a tag.
 
 =back
+
+=head1 OPTIONS
+
+=item --verbose|-v
+
+Print what squaretag does.
+
+=item --dry-run|-n
+
+Just print which files squaretag would rename without doing it.
+
+=item --force
+
+Ignore warnings about tags that look like files and overwriting existing
+files.
+
+=item --separator=SEP|-s=SEP
+
+The string to separate tags. Defaults to I<,>.
 
 =head1 RATIONALE
 
