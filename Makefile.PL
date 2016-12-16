@@ -5,7 +5,7 @@ use ExtUtils::MakeMaker;
 
 WriteMakefile(
     NAME       => "App::squaretag",
-    VERSION    => 0.03,
+    VERSION    => 0.04,
     EXE_FILES  => ['bin/squaretag'],
     META_MERGE => {
         "meta-spec" => { version => 2 },
