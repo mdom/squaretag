@@ -11,6 +11,7 @@ require_ok("$Bin/../bin/squaretag");
 
 my $tempdir = tempdir( CLEANUP => 1 );
 chdir $tempdir;
+$ENV{HOME} = '.';
 
 my $fh;
 open( $fh, '>', 'file.txt' );
@@ -90,6 +91,15 @@ EOF
 like capture(), qr/^Usage:/;
 
 like capture('add'), qr/^Usage:/;
+
+open( my $cfg, '>', '.squaretagrc');
+
+print $cfg qq{separator = " " # by space\n};
+close $cfg;
+
+is capture(qw(add -v quux bar[foo].txt)), <<EOF;
+bar[foo].txt -> bar[foo quux].txt
+EOF
 
 chdir("..");
 

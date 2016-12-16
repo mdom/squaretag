@@ -16,7 +16,8 @@ if ( !caller ) {
 
 sub run {
 
-    my %options = ( separator => ',', );
+    my %options =
+      ( separator => ',', read_configfile("$ENV{HOME}/.squaretagrc") );
 
     GetOptionsFromArray( \@_, \%options, 'separator|s=s' )
       or pod2usage();
@@ -369,6 +370,26 @@ sub split_file {
     return ( $base, $tags, $ext );
 }
 
+sub read_configfile {
+    my $file = shift;
+    return if !-e $file;
+    open( my $fh, '<', $file )
+      or die "Can't open configuration file $file: !\n";
+    my %config;
+
+    while (<$fh>) {
+        chomp;       # no newline
+        s/#.*//;     # no comments
+        s/^\s+//;    # no leading white
+        s/\s+$//;    # no trailing white
+        next unless length;    # anything left?
+        my ( $key, $value ) = split( /\s*=\s*/, $_, 2 );
+        $value =~ s/^"(.*)"/$1/;
+        $config{$key} = $value;
+    }
+    return %config;
+}
+
 1;
 
 __END__
@@ -511,6 +532,16 @@ files.
 =item --separator=SEP|-s=SEP
 
 The string to separate tags. Defaults to I<,>.
+
+=head1 CONFIGURATION FILE
+
+squaretag will try to read I<$HOME/.squaretagrc> on startup. Empty lines
+are ignored, as is everything after I<#>. Everything else is a key-value
+combination separated by a equal sign. All options can be set. Quoting
+is optional, except to save trailings whitespace.
+
+  separator = " " # by space!
+  force = 1
 
 =head1 RATIONALE
 
