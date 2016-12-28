@@ -514,6 +514,8 @@ List all FILES without a tag.
 
 =head1 OPTIONS
 
+=over 4
+
 =item --verbose|-v
 
 Print what squaretag does.
@@ -530,6 +532,8 @@ files.
 =item --separator=SEP|-s=SEP
 
 The string to separate tags. Defaults to I<,>.
+
+=back
 
 =head1 CONFIGURATION FILE
 
