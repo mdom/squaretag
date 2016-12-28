@@ -67,7 +67,7 @@ No operand on right side of author.
 EOF
 
 is  capture( sub { search_tags( 'author > &&', 'file[author=mdom].txt' ) } ), <<EOF;
-No operand on right side of author.
+Operand && isn't numeric in numerical comparison.
 EOF
 
 done_testing;

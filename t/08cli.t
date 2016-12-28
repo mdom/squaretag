@@ -85,7 +85,8 @@ Skip moving bar.txt to bar[foo].txt: File already exists.
 EOF
 
 is capture(qw(search foo;bar foo.txt)), <<EOF;
-Unknown term ; in search.
+Error at foo;bar
+            ^
 EOF
 
 like capture(), qr/^Usage:/;

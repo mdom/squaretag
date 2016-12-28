@@ -284,36 +284,34 @@ sub search_tags {
 
 sub compile_search {
     my $search = shift;
-    my @terms  = split( /\s+|(?=&&|\|\||\(|\)|!|=|<|>)|\b/, $search );
     my $code   = 'sub { my $tags = shift;';
-    while ( my $term = shift @terms ) {
-        next if $term =~ /^s*$/;
-        if ( $term =~ /^\w+$/ ) {
-            if ( defined $terms[0] && $terms[0] =~ /^=|<|>$/ ) {
-                my ( $op, $operand ) = splice( @terms, 0, 2 );
-                $op = $op eq '=' ? 'eq' : $op;
-                if ( !defined $operand || $operand !~ /^\w+$/ ) {
-                    die "No operand on right side of $term.\n";
-                }
-                if ( !looks_like_number($operand) ) {
-                    if ( $op eq '<' or $op eq '>' ) {
-                        die
-"Operand $operand isn't numeric in numerical comparison.\n";
-                    }
-                    $operand = qq{"$operand"};
-                }
-                $code .= qq{ defined \$tags->{$term} && }
-                  . qq{\$tags->{$term} $op $operand};
-            }
-            else {
-                $code .= " exists \$tags->{$term}";
-            }
+    while (1) {
+        if ( $search =~ /\G ( && | \|\| | \( | \) | ! )/gcx ) {
+            $code .= $1;
         }
-        elsif ( $term =~ /^&&|\|\||\(|\)|!$/ ) {
-            $code .= " $term";
+        elsif ( $search =~ /\G (\w+) \s* (<|>|=) \s* $/gcx ) {
+            die "No operand on right side of $1.\n";
+        }
+        elsif ( $search =~ /\G (\w+) \s* = \s* (\w+)/gcx ) {
+            $code .= qq{ defined \$tags->{$1} && } . qq{\$tags->{$1} eq "$2"};
+        }
+        elsif ( $search =~ /\G (\w+) \s* (<|>) \s* ([^0-9]+)/gcx ) {
+            die "Operand $3 isn't numeric in numerical comparison.\n";
+        }
+        elsif ( $search =~ /\G (\w+) \s* (=|<|>) \s* ([0-9]+)/gcx ) {
+            $code .= qq{ defined \$tags->{$1} && } . qq{\$tags->{$1} $2 "$3"};
+        }
+        elsif ( $search =~ /\G (\w+) /gcx ) {
+            $code .= " exists \$tags->{$1}";
+        }
+        elsif ( $search =~ /\G \s+ /gcx ) {
+            redo;
+        }
+        elsif ( $search =~ /\G (.)/gcx ) {
+            die "Error at $search\n" . ( ' ' x ( 8 + pos($search) ) ) . "^\n";
         }
         else {
-            die "Unknown term $term in search.\n";
+            last;
         }
     }
     $code .= '}';
