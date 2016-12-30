@@ -13,7 +13,7 @@ squaretag - tag files by using filenames
   squaretag          clear  [-v] [-n] [-f] FILES...
   squaretag [-s SEP] rename [-v] [-n] [-f] OLD_TAG NEW_TAG FILES...
   squaretag [-s SEP] list FILES...
-  squaretag [-s SEP] search SEARCH FILES...
+  squaretag [-s SEP] search [-I REGEX] SEARCH FILES...
   squaretag          untagged FILES...
 
 =head1 DESCRIPTION
@@ -95,9 +95,24 @@ For example:
   read && good
   !read || (not_read && prio )
 
-There are three additional operators I<<>, I<=> and I<>> to handle tags
-with values. The I<=> compares its operand as strings, the other two
-just work on numerical tags.
+There are four additional operators I<E<lt>>, I<E<gt>>, I<=> and I<~> to handle tags
+with values.
+
+=over 4
+
+=item I<=>
+
+Compares if operands are string-equal.
+
+=item I<E<lt>>, I<E<gt>>
+
+Numerical less-than or more-than comparison.
+
+=item I<~>
+
+Checks if left operand contains right operand as substring.
+
+=back
 
 =item clear FILES...
 
@@ -120,6 +135,8 @@ List all FILES without a tag.
 
 =head1 OPTIONS
 
+=over 4
+
 =item --verbose|-v
 
 Print what squaretag does.
@@ -136,6 +153,18 @@ files.
 =item --separator=SEP|-s=SEP
 
 The string to separate tags. Defaults to I<,>.
+
+=item --implicit=REGEX|-I=REGEX
+
+Apply regex to the basename of the file without its tags. All matched
+capture groups are added as tags with less precedence than the explicit
+tags.
+
+For example, if regex is '^(?<author>(.+?),' and the file is called
+'Pratchett, Terry - Color of Magic.epub', a tag I<author> with the value
+of I<Pratchett> is added.
+
+=back
 
 =head1 CONFIGURATION FILE
 
