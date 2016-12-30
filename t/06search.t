@@ -40,6 +40,42 @@ is_deeply( search_tags( 'author=dom',   'file[author=mdom].txt' ), [] );
 is_deeply( search_tags( 'author~dom',   'file[author=mdom].txt' ),
     ['file[author=mdom].txt'] );
 
+is_deeply(
+    search_tags(
+        { implicit => '^(?<author>.+?),' },
+        'author=Pratchett',
+        'Pratchett, Terry - Colors of Magic.epub'
+    ),
+    ['Pratchett, Terry - Colors of Magic.epub']
+);
+
+is_deeply(
+    search_tags(
+        { implicit => '^(?<author>.+?),' },
+        'author=Pratchett',
+        'Pratchett, Terry - Colors of Magic[read].epub'
+    ),
+    ['Pratchett, Terry - Colors of Magic[read].epub']
+);
+
+is_deeply(
+    search_tags(
+        { implicit => '^(?<author>.+?),' },
+        'author=Pratchett',
+        'Pratchett, Terry - Colors of Magic[author=Assimov].epub'
+    ),
+    []
+);
+
+is_deeply(
+    search_tags(
+        { implicit => '^(?<author>.+?),' },
+        'author=Assimov',
+        'Pratchett, Terry - Colors of Magic[author=Assimov].epub'
+    ),
+    ['Pratchett, Terry - Colors of Magic[author=Assimov].epub']
+);
+
 BEGIN {
 	    *CORE::GLOBAL::exit = sub (;$) { }
     }
