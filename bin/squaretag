@@ -289,11 +289,15 @@ sub compile_search {
         if ( $search =~ /\G ( && | \|\| | \( | \) | ! )/gcx ) {
             $code .= $1;
         }
-        elsif ( $search =~ /\G (\w+) \s* (<|>|=) \s* $/gcx ) {
+        elsif ( $search =~ /\G (\w+) \s* (<|>|=|~) \s* $/gcx ) {
             die "No operand on right side of $1.\n";
         }
         elsif ( $search =~ /\G (\w+) \s* = \s* (\w+)/gcx ) {
             $code .= qq{ defined \$tags->{$1} && } . qq{\$tags->{$1} eq "$2"};
+        }
+        elsif ( $search =~ /\G (\w+) \s* ~ \s* (\w+)/gcx ) {
+            $code .=
+              qq{ defined \$tags->{$1} && index(\$tags->{$1},"$2") != -1 };
         }
         elsif ( $search =~ /\G (\w+) \s* (<|>) \s* ([^0-9]+)/gcx ) {
             die "Operand $3 isn't numeric in numerical comparison.\n";
@@ -489,9 +493,24 @@ For example:
   read && good
   !read || (not_read && prio )
 
-There are three additional operators I<<>, I<=> and I<>> to handle tags
-with values. The I<=> compares its operand as strings, the other two
-just work on numerical tags.
+There are four additional operators I<E<lt>>, I<E<gt>>, I<=> and I<~> to handle tags
+with values.
+
+=over 4
+
+=item I<=>
+
+Compares if operands are string-equal.
+
+=item I<E<lt>>, I<E<gt>>
+
+Numerical less-than or more-than comparison.
+
+=item I<~>
+
+Checks if left operand contains right operand as substring.
+
+=back
 
 =item clear FILES...
 

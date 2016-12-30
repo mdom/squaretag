@@ -35,7 +35,10 @@ is_deeply( search_tags( 'year>2010', 'file[year=2009].txt' ), [] );
 is_deeply( search_tags( 'year>2010', 'file[foo].txt' ),       [] );
 is_deeply( search_tags( 'author=mdom', 'file[author=mdom].txt' ),
     ['file[author=mdom].txt'] );
-is_deeply( search_tags( '!author=mdom',  'file[author=mdom].txt' ), [] );
+is_deeply( search_tags( '!author=mdom', 'file[author=mdom].txt' ), [] );
+is_deeply( search_tags( 'author=dom',   'file[author=mdom].txt' ), [] );
+is_deeply( search_tags( 'author~dom',   'file[author=mdom].txt' ),
+    ['file[author=mdom].txt'] );
 
 BEGIN {
 	    *CORE::GLOBAL::exit = sub (;$) { }
