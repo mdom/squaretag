@@ -76,6 +76,29 @@ is_deeply(
     ['Pratchett, Terry - Colors of Magic[author=Assimov].epub']
 );
 
+is_deeply(
+    search_tags(
+        { implicit => '^(?<author>.+?),' },
+        'implicit()',
+        'Pratchett, Terry - Colors of Magic[author=Assimov].epub'
+    ),
+    ['Pratchett, Terry - Colors of Magic[author=Assimov].epub']
+);
+
+is_deeply(
+    search_tags(
+        { implicit => '^(?<author>.+?),' },
+        'implicit()',
+        'Pratchett - Colors of Magic[author=Assimov].epub'
+    ),
+    []
+);
+
+is_deeply( search_tags( 'tagged()', 'file[author=mdom].txt' ),
+    ['file[author=mdom].txt'] );
+
+is_deeply( search_tags( '!tagged()', 'file[author=mdom].txt' ), [] );
+
 BEGIN {
     *CORE::GLOBAL::exit = sub (;$) { }
 }

@@ -273,10 +273,12 @@ sub search_tags {
     for my $file (@files) {
         my ( $base, $tags, $ext ) = split_file($file);
 
-        my %tags;
+        my ( %tags, %properties );
 
-        if ($implicit_re) {
-            "$base.$ext" =~ /$implicit_re/o;
+        $properties{tagged} = 1 if $tags;
+
+        if ( $implicit_re && "$base.$ext" =~ /$implicit_re/o ) {
+            $properties{implicit} = 1;
             %tags = %+;
         }
 
@@ -285,17 +287,20 @@ sub search_tags {
             my ( $key, $val ) = split( /=/, $tag, 2 );
             $tags{$key} = $val;
         }
-        push @found, $file if $check->( \%tags );
+        push @found, $file if $check->( \%tags, \%properties );
     }
     return \@found;
 }
 
 sub compile_search {
     my $search = shift;
-    my $code   = 'sub { my $tags = shift;';
+    my $code   = 'sub { my ($tags,$properties) = @_;';
     while (1) {
         if ( $search =~ /\G ( && | \|\| | \( | \) | ! )/gcx ) {
             $code .= $1;
+        }
+        elsif ( $search =~ /\G (implicit|tagged)\(\) /gcx ) {
+            $code .= qq{ \$properties->{$1} };
         }
         elsif ( $search =~ /\G (\w+) \s* (<|>|=|~) \s* $/gcx ) {
             die "No operand on right side of $1.\n";
@@ -501,8 +506,11 @@ For example:
   read && good
   !read || (not_read && prio )
 
-There are four additional operators I<E<lt>>, I<E<gt>>, I<=> and I<~> to handle tags
-with values.
+There are four additional operators I<E<lt>>, I<E<gt>>, I<=> and I<~>
+to handle tags with values.
+
+The function I<tagged()> returns true if the file has any explicit tags,
+I<implicit()> if it has any implicit tags.
 
 =over 4
 

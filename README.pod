@@ -95,8 +95,11 @@ For example:
   read && good
   !read || (not_read && prio )
 
-There are four additional operators I<E<lt>>, I<E<gt>>, I<=> and I<~> to handle tags
-with values.
+There are four additional operators I<E<lt>>, I<E<gt>>, I<=> and I<~>
+to handle tags with values.
+
+The function I<tagged()> returns true if the file has any explicit tags,
+I<implicit()> if it has any implicit tags.
 
 =over 4
 
