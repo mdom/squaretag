@@ -77,8 +77,8 @@ is_deeply(
 );
 
 BEGIN {
-	    *CORE::GLOBAL::exit = sub (;$) { }
-    }
+    *CORE::GLOBAL::exit = sub (;$) { }
+}
 
 sub capture {
     my $code = shift;
@@ -94,18 +94,22 @@ sub capture {
     return $got;
 }
 
-is  capture( sub { search_tags( 'author < mdom', 'file[author=mdom].txt' ) } ), <<EOF;
+is capture( sub { search_tags( 'author < mdom', 'file[author=mdom].txt' ) } ),
+  <<EOF;
 Operand mdom isn't numeric in numerical comparison.
 EOF
-is  capture( sub { search_tags( 'author > mdom', 'file[author=mdom].txt' ) } ), <<EOF;
+is capture( sub { search_tags( 'author > mdom', 'file[author=mdom].txt' ) } ),
+  <<EOF;
 Operand mdom isn't numeric in numerical comparison.
 EOF
 
-is  capture( sub { search_tags( 'author > ', 'file[author=mdom].txt' ) } ), <<EOF;
+is capture( sub { search_tags( 'author > ', 'file[author=mdom].txt' ) } ),
+  <<EOF;
 No operand on right side of author.
 EOF
 
-is  capture( sub { search_tags( 'author > &&', 'file[author=mdom].txt' ) } ), <<EOF;
+is capture( sub { search_tags( 'author > &&', 'file[author=mdom].txt' ) } ),
+  <<EOF;
 Operand && isn't numeric in numerical comparison.
 EOF
 
