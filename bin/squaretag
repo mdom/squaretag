@@ -33,7 +33,7 @@ sub run {
                 my $options = shift;
                 rename_files( $options, add_tags( $options, @_ ) );
             },
-            minargs  => 2,
+            minargs  => 1,
             opt_spec => \@rename_opts,
             check    => [ \&is_tag_file, \&check_tags ],
         },
@@ -42,7 +42,7 @@ sub run {
                 my $options = shift;
                 rename_files( $options, remove_tags( $options, @_ ) );
             },
-            minargs  => 2,
+            minargs  => 1,
             opt_spec => \@rename_opts,
             check    => [ \&is_tag_file, \&check_tags ],
             alias    => [ 'rm', 'delete', 'del' ],
@@ -52,7 +52,7 @@ sub run {
                 my $options = shift;
                 rename_files( $options, rename_tag( $options, @_ ) );
             },
-            minargs  => 3,
+            minargs  => 2,
             opt_spec => \@rename_opts,
             check =>
               [ \&is_tag_file, sub { check_tags( shift, "$_[0],$_[1]" ) } ],
@@ -60,21 +60,21 @@ sub run {
         },
         clear => {
             cmd      => sub { rename_files( shift, clear(@_) ) },
-            minargs  => 1,
+            minargs  => 0,
             opt_spec => \@rename_opts,
         },
         search => {
             cmd => sub { print $_, "\n" for @{ search_tags(@_) } },
             opt_spec => ['implicit|I=s'],
-            minargs  => 2
+            minargs  => 0
         },
         untagged => {
             cmd => sub { shift; print $_, "\n" for @{ find_untagged(@_) } },
-            minargs => 1
+            minargs => 0
         },
         list => {
             cmd     => sub { print_tag_list( list_tags(@_) ) },
-            minargs => 1
+            minargs => 0
         },
     );
 
@@ -119,6 +119,9 @@ sub run {
 
 sub file_iterator {
     my ( $recursive, @files ) = @_;
+    if ( !@files ) {
+        push @files, '.';
+    }
     return sub {
       FILE:
         while ( my $file = shift @files ) {
@@ -453,13 +456,13 @@ squaretag - tag files by using filenames
 
 =head1 SYNOPSIS
 
-  squaretag [-s SEP] [-r] add    [-v] [-n] [-f] TAG FILES...
-  squaretag [-s SEP] [-r] remove [-v] [-n] [-f] TAG FILES...
-  squaretag          [-r] clear  [-v] [-n] [-f] FILES...
-  squaretag [-s SEP] [-r] rename [-v] [-n] [-f] OLD_TAG NEW_TAG FILES...
-  squaretag [-s SEP] [-r] list FILES...
-  squaretag [-s SEP] [-r] search [-I REGEX] SEARCH FILES...
-  squaretag          [-r] untagged FILES...
+  squaretag [-s SEP] [-r] add    [-v] [-n] [-f] TAG [[FILES...]]
+  squaretag [-s SEP] [-r] remove [-v] [-n] [-f] TAG [[FILES...]]
+  squaretag          [-r] clear  [-v] [-n] [-f] [[FILES...]]
+  squaretag [-s SEP] [-r] rename [-v] [-n] [-f] OLD_TAG NEW_TAG [[FILES...]]
+  squaretag [-s SEP] [-r] list [[FILES...]]
+  squaretag [-s SEP] [-r] search [-I REGEX] SEARCH [[FILES...]]
+  squaretag          [-r] untagged [[FILES...]]
 
 =head1 DESCRIPTION
 
@@ -477,7 +480,7 @@ Suppose the current directory contains the following files:
 
 Now you want to add the tag I<family> to all pictures.
 
-  $ squaretag add -v family *
+  $ squaretag add -v family
   picture01.jpg -> picture01[family].jpg
   picture02 -> picture02[family]
 
@@ -498,39 +501,39 @@ Or delete a tag
 
 And what would tags be good for if you couldn't search for them
 
-  $ squaretag search 'family && !me' *
+  $ squaretag search 'family && !me'
   picture02[family]
 
 And if you have enough, you can simple clear all tags
 
-  $ squaretag clear *
+  $ squaretag clear
   picture01[family].jpg -> picture01.jpg
   picture02[family] -> picture02
 
 Tags can also have values:
 
   $ squaretag add read=2016 book.epub
-  $ squaretag search 'read>2010' *
+  $ squaretag search 'read>2010'
   books[read=2016].epub
-  $ squaretag search 'read<2010' *
-  $ squaretag search 'read=2016' *
+  $ squaretag search 'read<2010'
+  $ squaretag search 'read=2016'
   books[read=2016].epub
 
 =head1 COMMANDS
 
 =over 4
 
-=item add TAG FILES...
+=item add TAG [FILES...]
 
 Add TAG to FILES. TAG is a comma seperated list of tags to add. If
 a tag has a suffix of I<-> this tag will be removed from the file.
 
-=item remove TAG FILES...
+=item remove TAG [FILES...]
 
 Remove TAG from FILES. TAG is a comma seperated list of tags to remove. If
 a tag has a suffix of I<+> this tag will be added to the file.
 
-=item search SPEC FILES...
+=item search SPEC [FILES...]
 
 List all FILES that match the search SPEC. SPEC can contain tags and
 the usual boolean operators.
@@ -562,20 +565,20 @@ Checks if left operand contains right operand as substring.
 
 =back
 
-=item clear FILES...
+=item clear [FILES...]
 
 Remove all tags from FILES.
 
-=item rename OLD_TAG NEW_TAG FILES...
+=item rename OLD_TAG NEW_TAG [FILES...]
 
 Rename OLD_TAG in NEW_TAG in all FILES.
 
-=item list FILES...
+=item list [FILES...]
 
 List and count all tags for FILES. The tags are sorted in descending
 order of frequency.
 
-=item untagged FILES...
+=item untagged [FILES...]
 
 List all FILES without a tag.
 
