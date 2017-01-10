@@ -6,6 +6,7 @@ use Pod::Usage qw(pod2usage);
 use Scalar::Util qw(looks_like_number);
 use Getopt::Long
   qw(GetOptionsFromArray :config bundling no_ignore_case no_getopt_compat require_order);
+use File::Spec::Functions qw(no_upwards catfile);
 
 ( my $app = $0 ) =~ s;.*/;;;
 
@@ -19,7 +20,7 @@ sub run {
     my %options =
       ( separator => ',', read_configfile("$ENV{HOME}/.squaretagrc") );
 
-    GetOptionsFromArray( \@_, \%options, 'separator|s=s' )
+    GetOptionsFromArray( \@_, \%options, 'separator|s=s', 'recursive|r!' )
       or pod2usage();
 
     my $mode = shift;
@@ -116,6 +117,29 @@ sub run {
     return;
 }
 
+sub file_iterator {
+    my ( $recursive, @files ) = @_;
+    return sub {
+      FILE:
+        while ( my $file = shift @files ) {
+            if ( -d $file ) {
+                if ($recursive) {
+                    opendir( my $dh, $file )
+                      or die "Can't recurise into $file\n";
+                    my @new_files = no_upwards( readdir($dh) );
+                    unshift @files,
+                      sort map { catfile( $file, $_ ) } @new_files;
+                }
+                next FILE;
+            }
+
+            # TODO handle symlink loops
+            return $file;
+        }
+        return;
+    };
+}
+
 sub add_tags    { modify( shift, shift, '+', @_ ) }
 sub remove_tags { modify( shift, shift, '-', @_ ) }
 
@@ -195,8 +219,10 @@ sub modify {
 
     my @ops;
 
+    my $iter = file_iterator( $options->{recursive}, @files );
+
   FILE:
-    for my $file (@files) {
+    while ( my $file = $iter->() ) {
         my ( $base, $tags, $ext ) = split_file($file);
 
         my @tags = split( $sep, $tags );
@@ -240,9 +266,11 @@ sub modify {
 }
 
 sub clear {
+    my $options = ref $_[0] eq 'HASH' ? shift : {};
     my (@files) = @_;
     my @ops;
-    for my $file (@files) {
+    my $iter = file_iterator( $options->{recursive}, @files );
+    while ( my $file = $iter->() ) {
         my ( $base, $tags, $ext ) = split_file($file);
         my $new_file = "$base$ext";
         push @ops, [ $file, $new_file ];
@@ -251,9 +279,11 @@ sub clear {
 }
 
 sub find_untagged {
-    my @files = @_;
+    my $options = ref $_[0] eq 'HASH' ? shift : {};
+    my @files   = @_;
+    my $iter    = file_iterator( $options->{recursive}, @files );
     my @found;
-    for my $file (@files) {
+    while ( my $file = $iter->() ) {
         my ( $base, $tags, $ext ) = split_file($file);
         if ( !$tags ) {
             push @found, $file;
@@ -269,8 +299,10 @@ sub search_tags {
     my $implicit_re = $options->{implicit};
     my @found;
     my $check = compile_search($tag_spec);
+    my $iter = file_iterator( $options->{recursive}, @files );
   FILE:
-    for my $file (@files) {
+
+    while ( my $file = $iter->() ) {
         my ( $base, $tags, $ext ) = split_file($file);
 
         my ( %tags, %properties );
@@ -342,7 +374,8 @@ sub list_tags {
     my (@files) = @_;
     my $sep = $options->{separator} || ',';
     my %tags;
-    for my $file (@files) {
+    my $iter = file_iterator( $options->{recursive}, @files );
+    while ( my $file = $iter->() ) {
         my ( $base, $tags, $ext ) = split_file($file);
         my @tags = split( $sep, $tags );
         $tags{$_}++ for @tags;
@@ -356,8 +389,9 @@ sub rename_tag {
     my $sep = $options->{separator} || ',';
     return [] if $old eq $new;
     my @ops;
+    my $iter = file_iterator( $options->{recursive}, @files );
   FILE:
-    for my $file (@files) {
+    while ( my $file = $iter->() ) {
         my ( $base, $tags, $ext ) = split_file($file);
         my @tags = split( $sep, $tags );
         my %tags = map { $_ => 1 } @tags;
@@ -419,13 +453,13 @@ squaretag - tag files by using filenames
 
 =head1 SYNOPSIS
 
-  squaretag [-s SEP] add    [-v] [-n] [-f] TAG FILES...
-  squaretag [-s SEP] remove [-v] [-n] [-f] TAG FILES...
-  squaretag          clear  [-v] [-n] [-f] FILES...
-  squaretag [-s SEP] rename [-v] [-n] [-f] OLD_TAG NEW_TAG FILES...
-  squaretag [-s SEP] list FILES...
-  squaretag [-s SEP] search [-I REGEX] SEARCH FILES...
-  squaretag          untagged FILES...
+  squaretag [-s SEP] [-r] add    [-v] [-n] [-f] TAG FILES...
+  squaretag [-s SEP] [-r] remove [-v] [-n] [-f] TAG FILES...
+  squaretag          [-r] clear  [-v] [-n] [-f] FILES...
+  squaretag [-s SEP] [-r] rename [-v] [-n] [-f] OLD_TAG NEW_TAG FILES...
+  squaretag [-s SEP] [-r] list FILES...
+  squaretag [-s SEP] [-r] search [-I REGEX] SEARCH FILES...
+  squaretag          [-r] untagged FILES...
 
 =head1 DESCRIPTION
 
@@ -567,6 +601,10 @@ files.
 =item --separator=SEP|-s=SEP
 
 The string to separate tags. Defaults to I<,>.
+
+=item --recursive|-r
+
+Recurse into subdirectories.
 
 =item --implicit=REGEX|-I=REGEX
 
