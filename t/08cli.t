@@ -93,7 +93,7 @@ like capture(), qr/^Usage:/;
 
 like capture('add'), qr/^Usage:/;
 
-open( my $cfg, '>', '.squaretagrc');
+open( my $cfg, '>', '.squaretagrc' );
 
 print $cfg qq{separator = " " # by space\n};
 close $cfg;
