@@ -174,11 +174,11 @@ sub rename_files {
     for my $op (@$ops) {
         my ( $old, $new ) = @$op;
         next if $old eq $new;
-        if ( !-e $old ) {
+        if ( !-e $old && !-l $old ) {
             warn "Skip missing file $old.\n";
             next;
         }
-        if ( -e $new ) {
+        if ( -e $new || -l $new ) {
             warn "Skip moving $old to $new: File already exists.\n";
             next;
         }
