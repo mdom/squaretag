@@ -102,6 +102,12 @@ is capture(qw(add -v quux bar[foo].txt)), <<EOF;
 bar[foo].txt -> bar[foo quux].txt
 EOF
 
+symlink( 'missing.txt', 'symlink.txt' ) or die "Can't create symlink: $!";
+
+is capture(qw(add -v foo symlink.txt)), <<EOF;
+symlink.txt -> symlink[foo].txt
+EOF
+
 chdir("..");
 
 done_testing;
