@@ -1,5 +1,7 @@
 language: perl
-before_install:
+install:
   cpanm -n Devel::Cover Devel::Cover::Report::Coveralls
 script:
-  perl Makefile.PL && make && cover -test -report coveralls
+  perl Makefile.PL && make
+after_success:
+  cover -test -report coveralls
