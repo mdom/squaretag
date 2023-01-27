@@ -435,7 +435,7 @@ sub rename_tag {
 sub split_file {
     my $file = shift;
     my ( $base, $tags, $ext );
-    ( $base, $ext )  = $file =~ m/^(.+?)(\.[^.]*$|$)/;
+    ( $base, $ext )  = $file =~ m/^(.+?)((?:\.tar)?\.[^.]*$|$)/;
     ( $base, $tags ) = $base =~ m/^(.*?)(?:\[([^[]*)\]$|$)/;
     if ( !$base ) {
         $base = "[$tags]";

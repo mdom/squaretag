@@ -8,9 +8,13 @@ use Test::More;
 require_ok("$Bin/../bin/squaretag");
 
 my @tests = (
-    [ 'foo'   => [ 'foo',   '', '' ] => 'File without tag and extension' ],
-    [ '[]'    => [ '[]',    '', '' ] => 'File with just []' ],
-    [ '[foo]' => [ '[foo]', '', '' ] => 'File with just [foo]' ],
+    [
+        'foo.tar.gz' => [ 'foo', '', '.tar.gz' ] =>
+          'Handle special case for tar.gz'
+    ],
+    [ 'foo'       => [ 'foo',   '', '' ] => 'File without tag and extension' ],
+    [ '[]'        => [ '[]',    '', '' ] => 'File with just []' ],
+    [ '[foo]'     => [ '[foo]', '', '' ] => 'File with just [foo]' ],
     [ '[foo].ext' => [ '[foo]', '', '.ext' ] => 'File with just [foo].ext' ],
     [
         'foo.txt' => [ 'foo', '', '.txt' ] =>
