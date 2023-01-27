@@ -54,7 +54,7 @@ sub run {
             },
             minargs  => 2,
             opt_spec => \@rename_opts,
-            check =>
+            check    =>
               [ \&is_tag_file, sub { check_tags( shift, "$_[0],$_[1]" ) } ],
             alias => ['mv'],
         },
