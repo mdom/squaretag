@@ -165,6 +165,13 @@ The string to separate tags. Defaults to I<,>.
 
 Recurse into subdirectories.
 
+=item --extensions=LIST
+
+A comma separated list of extensions that are recognized by
+squartag. The leading dot is implied. This is only needed for extensions
+with a dot in them, normal extensions are handled by squartag without
+the need to specify them.
+
 =item --implicit=REGEX|-I=REGEX
 
 Apply regex to the basename of the file without its tags. All matched

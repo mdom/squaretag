@@ -10,6 +10,8 @@ use File::Spec::Functions qw(no_upwards catfile);
 
 ( my $app = $0 ) =~ s;.*/;;;
 
+my $extensions = '\.tar\.gz';
+
 if ( !caller ) {
     run(@ARGV);
     exit 0;
@@ -20,10 +22,14 @@ sub run {
     my %options =
       ( separator => ',', read_configfile("$ENV{HOME}/.squaretagrc") );
 
-    GetOptionsFromArray( \@_, \%options, 'separator|s=s', 'recursive|r!' )
+    GetOptionsFromArray( \@_, \%options, 'separator|s=s', 'extensions|x=s', 'recursive|r!' )
       or pod2usage();
 
     my $mode = shift;
+
+    if ( $options{extensions} ) {
+        $extensions .= '|' . join('|', map { "\Q.$_\E" } split(',', $options{extensions}));
+    }
 
     my @rename_opts = qw(verbose|v! dry-run|n! force|f!);
 
@@ -435,7 +441,7 @@ sub rename_tag {
 sub split_file {
     my $file = shift;
     my ( $base, $tags, $ext );
-    ( $base, $ext )  = $file =~ m/^(.+?)((?:\.tar)?\.[^.]*$|$)/;
+    ( $base, $ext )  = $file =~ m/^(.+?)($extensions|\.[^.]*$|$)/;
     ( $base, $tags ) = $base =~ m/^(.*?)(?:\[([^[]*)\]$|$)/;
     if ( !$base ) {
         $base = "[$tags]";
@@ -635,6 +641,13 @@ The string to separate tags. Defaults to I<,>.
 =item --recursive|-r
 
 Recurse into subdirectories.
+
+=item --extensions=LIST
+
+A comma separated list of extensions that are recognized by
+squartag. The leading dot is implied. This is only needed for extensions
+with a dot in them, normal extensions are handled by squartag without
+the need to specify them.
 
 =item --implicit=REGEX|-I=REGEX
 
