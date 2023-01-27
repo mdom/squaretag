@@ -63,6 +63,14 @@ sub run {
             minargs  => 0,
             opt_spec => \@rename_opts,
         },
+        sort => {
+            cmd => sub {
+                my $options = shift;
+                rename_files( $options, sort_tags( $options, @_ ) );
+            },
+            minargs  => 0,
+            opt_spec => \@rename_opts,
+        },
         search => {
             cmd      => sub { print $_, "\n" for @{ search_tags(@_) } },
             opt_spec => ['implicit|I=s'],
@@ -293,6 +301,21 @@ sub find_untagged {
         }
     }
     return \@found;
+}
+
+sub sort_tags {
+    my $options = ref $_[0] eq 'HASH' ? shift : {};
+    my $sep     = $options->{separator} || ',';
+    my $iter    = file_iterator( $options->{recursive}, @_ );
+    my @ops;
+    while ( my $file = $iter->() ) {
+        my ( $base, $tags, $ext ) = split_file($file);
+        next if !$tags;
+        my $new_file =
+          "$base\[" . join( $sep, sort split( $sep, $tags ) ) . "\]$ext";
+        push @ops, [ $file, $new_file ];
+    }
+    return \@ops;
 }
 
 sub search_tags {
@@ -568,6 +591,10 @@ Checks if left operand contains right operand as substring.
 =item clear [FILES...]
 
 Remove all tags from FILES.
+
+=item sort [FILES...]
+
+Sort tags in all FILES with tags.
 
 =item rename OLD_TAG NEW_TAG [FILES...]
 

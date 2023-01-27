@@ -121,6 +121,10 @@ Checks if left operand contains right operand as substring.
 
 Remove all tags from FILES.
 
+=item sort [FILES...]
+
+Sort tags in all FILES with tags.
+
 =item rename OLD_TAG NEW_TAG [FILES...]
 
 Rename OLD_TAG in NEW_TAG in all FILES.
